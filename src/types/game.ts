@@ -16,6 +16,87 @@ export type GameMode = 'classic' | 'rush-30' | 'rush-60';
 /** Outcome of a completed round */
 export type RoundResult = TeamId | 'tie' | null;
 
+/** Available visual themes */
+export type ThemeId = 'classic' | 'space' | 'dino' | 'soccer';
+
+// ── Theme configuration ─────────────────────────────────────────────
+
+/** Tailwind class strings for a single team's visuals */
+export interface TeamColors {
+  bg: string;
+  bgLight: string;
+  hover: string;
+  accent: string;
+  text: string;
+  label: string;
+  /** Dot color in scoreboard */
+  dot: string;
+  /** Label color in scoreboard */
+  scoreLabel: string;
+  /** Win-zone rgba base (used for dynamic opacity in TugArena) */
+  winZoneRgb: string;
+  /** Knot / glow rgb for TugArena marker */
+  knotRgb: string;
+  knotBorderRgb: string;
+  knotGlowRgba: string;
+  /** Victory overlay gradient + glow */
+  victoryGlow: string;
+  victoryGradient: string;
+  victoryBorder: string;
+  /** Status badge in scoreboard */
+  statusBg: string;
+  statusText: string;
+}
+
+/** Full theme configuration */
+export interface ThemeConfig {
+  id: ThemeId;
+  label: string;
+  /** Emoji shown in theme selector */
+  icon: string;
+  /** App shell background */
+  appBg: string;
+  /** Scoreboard bar background */
+  scoreboardBg: string;
+  /** Controls bar background */
+  controlsBg: string;
+  /** TugArena background gradient */
+  arenaBg: string;
+  /** Arena title text color */
+  arenaTitle: string;
+  /** Arena center-line dash color */
+  arenaCenterLine: string;
+  /** Arena center dot */
+  arenaCenterDot: string;
+  arenaCenterDotBorder: string;
+  /** Rope gradient classes */
+  ropeGradient: string;
+  ropeBorder: string;
+  ropeTexture: string;
+  /** Flag gradient + text */
+  flagGradient: string;
+  flagBorder: string;
+  flagText: string;
+  /** Step indicator center dot */
+  stepCenter: string;
+  /** Team-specific colors */
+  team1: TeamColors;
+  team2: TeamColors;
+  /** Victory overlay tie variant */
+  tieGlow: string;
+  tieGradient: string;
+  tieBorder: string;
+  /** Labels */
+  team1WinLabel: string;
+  team2WinLabel: string;
+  winSubtitle: string;
+  tieTitle: string;
+  tieSubtitle: string;
+  /** Icons for victory */
+  winIcon: string;
+  tieIcon: string;
+}
+
 /** Configuration object for question generation */
 export interface QuestionConfig {
   difficulty?: Difficulty;
@@ -59,13 +140,14 @@ export interface TeamPanelProps {
   disabled: boolean;
   score: number;
   streak: number;
+  colors: TeamColors;
 }
 
 /** Props for the TugArena component */
 export interface TugArenaProps {
-  /** Negative = Team 1 leading, Positive = Team 2 leading */
   position: number;
   winZone: number;
+  theme: ThemeConfig;
 }
 
 /** Props for the GameControls component */
@@ -73,10 +155,12 @@ export interface GameControlsProps {
   difficulty: Difficulty;
   operatorMode: OperatorMode;
   gameMode: GameMode;
+  themeId: ThemeId;
   soundEnabled: boolean;
   onDifficultyChange: (d: Difficulty) => void;
   onOperatorModeChange: (o: OperatorMode) => void;
   onGameModeChange: (m: GameMode) => void;
+  onThemeChange: (t: ThemeId) => void;
   onSoundToggle: () => void;
   onNewRound: () => void;
   onResetAll: () => void;
@@ -89,8 +173,8 @@ export interface ScoreBoardProps {
   operatorMode: OperatorMode;
   gameMode: GameMode;
   roundResult: RoundResult;
-  /** Seconds remaining in rush mode, null when not applicable */
   timeLeft: number | null;
+  theme: ThemeConfig;
 }
 
 /** Props for the VictoryOverlay component */
@@ -98,4 +182,5 @@ export interface VictoryOverlayProps {
   result: RoundResult;
   onPlayAgain: () => void;
   onResetScores: () => void;
+  theme: ThemeConfig;
 }

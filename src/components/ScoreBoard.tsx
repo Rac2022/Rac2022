@@ -36,8 +36,11 @@ export default function ScoreBoard({
   gameMode,
   roundResult,
   timeLeft,
+  theme,
 }: ScoreBoardProps) {
-  // Status text
+  const t1 = theme.team1;
+  const t2 = theme.team2;
+
   let statusText: string;
   let statusClass: string;
 
@@ -45,26 +48,25 @@ export default function ScoreBoard({
     statusText = "It\u2019s a Tie!";
     statusClass = "bg-amber-600/30 text-amber-300";
   } else if (roundResult === 1) {
-    statusText = "Team 1 Wins!";
-    statusClass = "bg-blue-600/30 text-blue-300";
+    statusText = `${t1.label} Wins!`;
+    statusClass = `${t1.statusBg} ${t1.statusText}`;
   } else if (roundResult === 2) {
-    statusText = "Team 2 Wins!";
-    statusClass = "bg-red-600/30 text-red-300";
+    statusText = `${t2.label} Wins!`;
+    statusClass = `${t2.statusBg} ${t2.statusText}`;
   } else {
     statusText = "Playing";
     statusClass = "bg-green-600/30 text-green-300";
   }
 
-  // Timer display
   const isRush = gameMode !== "classic";
   const timerUrgent = timeLeft !== null && timeLeft <= 5;
 
   return (
-    <div className="bg-gray-900/90 backdrop-blur-sm px-4 py-1.5 flex items-center justify-between gap-4 text-sm border-b border-gray-700/50">
+    <div className={`${theme.scoreboardBg} backdrop-blur-sm px-4 py-1.5 flex items-center justify-between gap-4 text-sm border-b border-gray-700/50`}>
       {/* Team 1 score */}
       <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-blue-500" />
-        <span className="text-blue-300 font-bold">T1</span>
+        <div className={`w-3 h-3 rounded-full ${t1.dot}`} />
+        <span className={`${t1.scoreLabel} font-bold`}>{t1.label}</span>
         <span className="text-white font-extrabold text-lg tabular-nums">
           {score.team1}
         </span>
@@ -82,7 +84,6 @@ export default function ScoreBoard({
           {OPERATOR_LABELS[operatorMode]}
         </span>
 
-        {/* Timer pill — only shown in rush modes */}
         {isRush && timeLeft !== null && (
           <span
             className={`px-2.5 py-0.5 rounded font-bold tabular-nums text-sm ${
@@ -95,7 +96,6 @@ export default function ScoreBoard({
           </span>
         )}
 
-        {/* Time-up badge (timer expired but still showing overlay) */}
         {isRush && timeLeft === 0 && roundResult !== null && (
           <span className="px-2 py-0.5 rounded bg-red-700/40 text-red-300 text-xs font-bold">
             Time Up
@@ -112,8 +112,8 @@ export default function ScoreBoard({
         <span className="text-white font-extrabold text-lg tabular-nums">
           {score.team2}
         </span>
-        <span className="text-red-300 font-bold">T2</span>
-        <div className="w-3 h-3 rounded-full bg-red-500" />
+        <span className={`${t2.scoreLabel} font-bold`}>{t2.label}</span>
+        <div className={`w-3 h-3 rounded-full ${t2.dot}`} />
       </div>
     </div>
   );

@@ -3,27 +3,6 @@
 import { useState, useCallback } from "react";
 import type { TeamPanelProps } from "@/types/game";
 
-const TEAM_COLORS = {
-  1: {
-    bg: "bg-blue-600",
-    bgLight: "bg-blue-500",
-    hover: "hover:bg-blue-400",
-    accent: "bg-blue-700",
-    ring: "ring-blue-300",
-    text: "text-blue-100",
-    label: "TEAM 1",
-  },
-  2: {
-    bg: "bg-red-600",
-    bgLight: "bg-red-500",
-    hover: "hover:bg-red-400",
-    accent: "bg-red-700",
-    ring: "ring-red-300",
-    text: "text-red-100",
-    label: "TEAM 2",
-  },
-} as const;
-
 function getStreakLabel(streak: number): string | null {
   if (streak >= 5) return "Unstoppable!";
   if (streak >= 3) return "Hot streak!";
@@ -40,11 +19,11 @@ export default function TeamPanel({
   disabled,
   score,
   streak,
+  colors,
 }: TeamPanelProps) {
   const [input, setInput] = useState("");
   const [shake, setShake] = useState(false);
   const [flash, setFlash] = useState(false);
-  const colors = TEAM_COLORS[team];
 
   const streakLabel = getStreakLabel(streak);
 

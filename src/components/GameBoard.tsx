@@ -7,6 +7,7 @@ import ScoreBoard from "./ScoreBoard";
 import GameControls from "./GameControls";
 import VictoryOverlay from "./VictoryOverlay";
 import { generateQuestion } from "@/utils/generateQuestion";
+import { getTheme } from "@/utils/themes";
 import {
   playTap,
   playCorrect,
@@ -25,6 +26,7 @@ import type {
   OperatorMode,
   GameMode,
   RoundResult,
+  ThemeId,
 } from "@/types/game";
 
 const WIN_ZONE = 5;
@@ -48,6 +50,7 @@ export default function GameBoard() {
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [operatorMode, setOperatorMode] = useState<OperatorMode>("mixed");
   const [gameMode, setGameMode] = useState<GameMode>("classic");
+  const [themeId, setThemeId] = useState<ThemeId>("classic");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [position, setPosition] = useState(0);
   const [score, setScore] = useState<GameScore>({ team1: 0, team2: 0 });
@@ -58,10 +61,10 @@ export default function GameBoard() {
   const [roundResult, setRoundResult] = useState<RoundResult>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
+  const theme = getTheme(themeId);
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Track whether warning sound was already fired for the current countdown pass
   const warnedRef = useRef(false);
-  // Use a ref to read soundEnabled inside callbacks without re-creating them
   const soundRef = useRef(soundEnabled);
   soundRef.current = soundEnabled;
 
@@ -102,10 +105,7 @@ export default function GameBoard() {
 
   // ── Warning sound at <=5 seconds ─────────────────────────────────
   useEffect(() => {
-    if (timeLeft === null || timeLeft > 5 || timeLeft === 0 || roundOver) {
-      return;
-    }
-    // Play warning tick each second in the danger zone
+    if (timeLeft === null || timeLeft > 5 || timeLeft === 0 || roundOver) return;
     sfx(playWarning);
   }, [timeLeft, roundOver, sfx]);
 
@@ -250,7 +250,7 @@ export default function GameBoard() {
 
   // ── Render ────────────────────────────────────────────────────────
   return (
-    <div className="h-dvh w-full flex flex-col bg-gray-900 overflow-hidden select-none">
+    <div className={`h-dvh w-full flex flex-col ${theme.appBg} overflow-hidden select-none`}>
       <ScoreBoard
         score={score}
         difficulty={difficulty}
@@ -258,6 +258,7 @@ export default function GameBoard() {
         gameMode={gameMode}
         roundResult={roundResult}
         timeLeft={timeLeft}
+        theme={theme}
       />
 
       <div className="flex-1 flex flex-row min-h-0">
@@ -271,11 +272,12 @@ export default function GameBoard() {
             disabled={roundOver}
             score={score.team1}
             streak={streaks.team1}
+            colors={theme.team1}
           />
         </div>
 
         <div className="w-20 sm:w-28 md:w-36 shrink-0">
-          <TugArena position={position} winZone={WIN_ZONE} />
+          <TugArena position={position} winZone={WIN_ZONE} theme={theme} />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -288,6 +290,7 @@ export default function GameBoard() {
             disabled={roundOver}
             score={score.team2}
             streak={streaks.team2}
+            colors={theme.team2}
           />
         </div>
       </div>
@@ -296,10 +299,12 @@ export default function GameBoard() {
         difficulty={difficulty}
         operatorMode={operatorMode}
         gameMode={gameMode}
+        themeId={themeId}
         soundEnabled={soundEnabled}
         onDifficultyChange={setDifficulty}
         onOperatorModeChange={setOperatorMode}
         onGameModeChange={handleGameModeChange}
+        onThemeChange={setThemeId}
         onSoundToggle={handleSoundToggle}
         onNewRound={resetRound}
         onResetAll={resetAll}
@@ -310,6 +315,7 @@ export default function GameBoard() {
           result={roundResult}
           onPlayAgain={resetRound}
           onResetScores={resetAll}
+          theme={theme}
         />
       )}
     </div>

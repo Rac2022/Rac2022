@@ -1,6 +1,7 @@
 "use client";
 
-import type { GameControlsProps, Difficulty, OperatorMode, GameMode } from "@/types/game";
+import type { GameControlsProps, Difficulty, OperatorMode, GameMode, ThemeId } from "@/types/game";
+import { THEMES } from "@/utils/themes";
 
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
   { value: "easy", label: "Easy" },
@@ -22,6 +23,13 @@ const MODE_OPTIONS: { value: GameMode; label: string }[] = [
   { value: "rush-30", label: "30s Rush" },
   { value: "rush-60", label: "60s Rush" },
 ];
+
+const THEME_OPTIONS: { value: ThemeId; label: string }[] = (
+  Object.values(THEMES) as { id: ThemeId; label: string; icon: string }[]
+).map((t) => ({
+  value: t.id,
+  label: `${t.icon} ${t.label}`,
+}));
 
 function ToggleGroup<T extends string>({
   label,
@@ -61,16 +69,27 @@ export default function GameControls({
   difficulty,
   operatorMode,
   gameMode,
+  themeId,
   soundEnabled,
   onDifficultyChange,
   onOperatorModeChange,
   onGameModeChange,
+  onThemeChange,
   onSoundToggle,
   onNewRound,
   onResetAll,
 }: GameControlsProps) {
   return (
     <div className="bg-gray-800 py-2 px-4 flex items-center justify-center gap-3 flex-wrap">
+      <ToggleGroup
+        label="Theme"
+        options={THEME_OPTIONS}
+        value={themeId}
+        onChange={onThemeChange}
+      />
+
+      <div className="w-px h-6 bg-gray-600 hidden sm:block" />
+
       <ToggleGroup
         label="Mode"
         options={MODE_OPTIONS}
