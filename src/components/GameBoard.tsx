@@ -12,6 +12,7 @@ import { getTheme } from "@/utils/themes";
 import { getPreset } from "@/utils/presets";
 import { parseCustomQuestions, customToMathQuestion, shuffle } from "@/utils/parseCustomQuestions";
 import { saveSettings } from "@/utils/storage";
+import { calculateBattleRewards } from "@/utils/rewards";
 import {
   playTap,
   playCorrect,
@@ -36,6 +37,9 @@ import type {
   GameSettings,
   CustomQuestion,
   MathQuestion,
+  RoundRewards,
+  PlayerProfile,
+  RoundCompleteData,
 } from "@/types/game";
 
 const RUSH_DURATIONS: Record<GameMode, number | null> = {
@@ -59,14 +63,18 @@ function makeQuestions(
 
 interface GameBoardProps {
   initialSettings: GameSettings;
+  profile: PlayerProfile;
   onBackToLobby: () => void;
   onSettingsChanged: (s: GameSettings) => void;
+  onRoundComplete: (data: RoundCompleteData, rewards: RoundRewards) => void;
 }
 
 export default function GameBoard({
   initialSettings,
+  profile,
   onBackToLobby,
   onSettingsChanged,
+  onRoundComplete,
 }: GameBoardProps) {
   // ── Settings state ────────────────────────────────────────────────
   const [presetId, setPresetId] = useState<PresetId>(initialSettings.presetId);
@@ -105,7 +113,6 @@ export default function GameBoard({
     const idx = customIdxRef.current[teamKey];
     const q = pool[idx % pool.length];
     customIdxRef.current[teamKey] = idx + 1;
-    // Reshuffle when both teams have cycled through
     if (
       customIdxRef.current.team1 >= pool.length &&
       customIdxRef.current.team2 >= pool.length
@@ -135,12 +142,35 @@ export default function GameBoard({
   const [roundResult, setRoundResult] = useState<RoundResult>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
+  const [roundRewards, setRoundRewards] = useState<RoundRewards | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const soundRef = useRef(soundEnabled);
   soundRef.current = soundEnabled;
 
+  // ── Round tracking for rewards ────────────────────────────────────
+  const roundCorrectRef = useRef(0);
+  const roundMaxStreakRef = useRef(0);
+  const roundReportedRef = useRef(false);
+
   const roundOver = roundResult !== null;
+
+  // ── Report round completion ───────────────────────────────────────
+  useEffect(() => {
+    if (!roundOver || roundReportedRef.current) return;
+    roundReportedRef.current = true;
+
+    const data: RoundCompleteData = {
+      won: roundResult === 1 || roundResult === 2,
+      tied: roundResult === "tie",
+      correctCount: roundCorrectRef.current,
+      maxStreak: roundMaxStreakRef.current,
+      isRush: gameMode !== "classic",
+    };
+    const rewards = calculateBattleRewards(data, profile);
+    setRoundRewards(rewards);
+    onRoundComplete(data, rewards);
+  }, [roundOver, roundResult, gameMode, profile, onRoundComplete]);
 
   // ── Sync settings back to parent ──────────────────────────────────
   const buildSettings = useCallback((): GameSettings => ({
@@ -186,13 +216,9 @@ export default function GameBoard({
 
   useEffect(() => clearTimer, [clearTimer]);
 
-  // ── Start timer on mount if rush mode ─────────────────────────────
   useEffect(() => {
     const duration = RUSH_DURATIONS[gameMode];
-    if (duration !== null) {
-      startTimer(duration);
-    }
-    // Only on mount
+    if (duration !== null) startTimer(duration);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -259,9 +285,7 @@ export default function GameBoard({
   // ── Handlers ──────────────────────────────────────────────────────
   const getNextQuestion = useCallback(
     (teamKey: "team1" | "team2"): MathQuestion => {
-      if (useCustom) {
-        return nextCustomQuestion(teamKey);
-      }
+      if (useCustom) return nextCustomQuestion(teamKey);
       return generateQuestion({ difficulty, operatorMode, rules: questionRules });
     },
     [useCustom, nextCustomQuestion, difficulty, operatorMode, questionRules]
@@ -271,8 +295,13 @@ export default function GameBoard({
     (team: TeamId) => {
       sfx(playCorrect);
       sfx(playPull);
+      roundCorrectRef.current += 1;
       const key = team === 1 ? "team1" : "team2";
-      setStreaks((prev) => ({ ...prev, [key]: prev[key] + 1 }));
+      setStreaks((prev) => {
+        const next = prev[key] + 1;
+        roundMaxStreakRef.current = Math.max(roundMaxStreakRef.current, next);
+        return { ...prev, [key]: next };
+      });
       if (team === 1) {
         setPosition((prev) => prev - 1);
         setQuestions((prev) => ({ ...prev, team1: getNextQuestion("team1") }));
@@ -293,9 +322,7 @@ export default function GameBoard({
     [sfx]
   );
 
-  const handleKeypadTap = useCallback(() => {
-    sfx(playTap);
-  }, [sfx]);
+  const handleKeypadTap = useCallback(() => { sfx(playTap); }, [sfx]);
 
   const handleTeam1Correct = useCallback(() => handleCorrect(1), [handleCorrect]);
   const handleTeam2Correct = useCallback(() => handleCorrect(2), [handleCorrect]);
@@ -307,6 +334,10 @@ export default function GameBoard({
     setPosition(0);
     setRoundResult(null);
     setStreaks(ZERO_STREAKS);
+    setRoundRewards(null);
+    roundCorrectRef.current = 0;
+    roundMaxStreakRef.current = 0;
+    roundReportedRef.current = false;
 
     if (useCustom) {
       refreshCustomPool();
@@ -335,7 +366,6 @@ export default function GameBoard({
     setSoundEnabled((prev) => !prev);
   }, []);
 
-  // ── Teacher Setup integration ─────────────────────────────────────
   const handleSetupSettingsChange = useCallback((s: GameSettings) => {
     setPresetId(s.presetId);
     setDifficulty(s.difficulty);
@@ -416,6 +446,7 @@ export default function GameBoard({
           onPlayAgain={resetRound}
           onResetScores={resetAll}
           theme={theme}
+          rewards={roundRewards ?? undefined}
         />
       )}
 

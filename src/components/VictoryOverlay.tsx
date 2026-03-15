@@ -1,6 +1,7 @@
 "use client";
 
 import Confetti from "./Confetti";
+import RewardSummary from "./RewardSummary";
 import type { VictoryOverlayProps } from "@/types/game";
 
 export default function VictoryOverlay({
@@ -8,6 +9,7 @@ export default function VictoryOverlay({
   onPlayAgain,
   onResetScores,
   theme,
+  rewards,
 }: VictoryOverlayProps) {
   const isTie = result === "tie";
   const isTeam1 = result === 1;
@@ -74,7 +76,9 @@ export default function VictoryOverlay({
           {subtitleText}
         </p>
 
-        <div className="flex gap-4 justify-center">
+        {rewards && <RewardSummary rewards={rewards} />}
+
+        <div className="flex gap-4 justify-center mt-6">
           <button
             onClick={onPlayAgain}
             className="bg-white text-gray-900 font-bold text-lg sm:text-xl

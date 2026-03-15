@@ -114,7 +114,6 @@ export interface ThemeConfig {
   stepCenter: string;
   team1: TeamColors;
   team2: TeamColors;
-  /** Team avatar icons (emoji) */
   team1Icon: string;
   team2Icon: string;
   tieGlow: string;
@@ -161,6 +160,81 @@ export interface GameScore {
 export interface Streaks {
   team1: number;
   team2: number;
+}
+
+// ── Progression system ──────────────────────────────────────────────
+
+/** Locally persisted player profile */
+export interface PlayerProfile {
+  totalXp: number;
+  totalStars: number;
+  roundsPlayed: number;
+  roundsWon: number;
+  longestStreak: number;
+  dailyChallengesCompleted: number;
+  practiceCorrect: number;
+  rushRoundsCompleted: number;
+  unlockedBadges: string[];
+}
+
+/** A single line item in a reward summary */
+export interface RewardLine {
+  label: string;
+  xp: number;
+  stars: number;
+}
+
+/** Rewards earned from a battle round or practice session */
+export interface RoundRewards {
+  xp: number;
+  stars: number;
+  lines: RewardLine[];
+  newBadges: BadgeDef[];
+}
+
+/** Data reported when a battle round completes */
+export interface RoundCompleteData {
+  won: boolean;
+  tied: boolean;
+  correctCount: number;
+  maxStreak: number;
+  isRush: boolean;
+}
+
+/** Data reported when a practice session ends */
+export interface PracticeResult {
+  correctCount: number;
+  maxStreak: number;
+  totalAttempted: number;
+}
+
+/** Badge definition for unlockable achievements */
+export interface BadgeDef {
+  id: string;
+  icon: string;
+  label: string;
+  description: string;
+  requirement: {
+    stat: keyof PlayerProfile;
+    value: number;
+  };
+}
+
+/** Daily challenge definition */
+export interface DailyChallenge {
+  date: string;
+  title: string;
+  description: string;
+  type: 'correct-count' | 'streak' | 'win-count' | 'rush-complete' | 'practice-correct';
+  target: number;
+  reward: { xp: number; stars: number };
+}
+
+/** Daily challenge progress state */
+export interface DailyChallengeState {
+  date: string;
+  current: number;
+  completed: boolean;
 }
 
 // ── Component props ─────────────────────────────────────────────────
@@ -210,4 +284,5 @@ export interface VictoryOverlayProps {
   onPlayAgain: () => void;
   onResetScores: () => void;
   theme: ThemeConfig;
+  rewards?: RoundRewards;
 }

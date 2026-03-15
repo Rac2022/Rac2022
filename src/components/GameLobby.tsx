@@ -5,11 +5,15 @@ import { PRESETS, PRESET_IDS } from "@/utils/presets";
 import { THEMES } from "@/utils/themes";
 import { buildShareUrl } from "@/utils/urlConfig";
 import { getTheme } from "@/utils/themes";
+import PlayerProgress from "./PlayerProgress";
 import type {
   GameSettings,
   PresetId,
   ThemeId,
   GameMode,
+  PlayerProfile,
+  DailyChallenge,
+  DailyChallengeState,
 } from "@/types/game";
 
 const MODE_OPTIONS: { value: GameMode; label: string }[] = [
@@ -28,6 +32,10 @@ interface GameLobbyProps {
   onStartGame: () => void;
   onQuickStart: () => void;
   onOpenSetup: () => void;
+  onStartPractice: () => void;
+  profile: PlayerProfile;
+  dailyChallenge: DailyChallenge;
+  dailyProgress: DailyChallengeState;
 }
 
 export default function GameLobby({
@@ -36,6 +44,10 @@ export default function GameLobby({
   onStartGame,
   onQuickStart,
   onOpenSetup,
+  onStartPractice,
+  profile,
+  dailyChallenge,
+  dailyProgress,
 }: GameLobbyProps) {
   const [copied, setCopied] = useState(false);
   const theme = getTheme(settings.themeId);
@@ -73,9 +85,9 @@ export default function GameLobby({
   };
 
   return (
-    <div className={`h-dvh w-full flex flex-col items-center justify-center ${theme.appBg} overflow-hidden select-none p-4`}>
+    <div className={`h-dvh w-full flex flex-col items-center ${theme.appBg} overflow-y-auto select-none p-4`}>
       {/* Title */}
-      <div className="text-center mb-6" style={{ animation: "lobby-float 3s ease-in-out infinite" }}>
+      <div className="text-center mb-4 mt-4" style={{ animation: "lobby-float 3s ease-in-out infinite" }}>
         <div className="text-5xl sm:text-6xl mb-2">
           {theme.team1Icon} {theme.winIcon} {theme.team2Icon}
         </div>
@@ -85,6 +97,15 @@ export default function GameLobby({
         <p className="text-lg sm:text-xl text-gray-400 font-medium mt-1">
           Tug of War Math
         </p>
+      </div>
+
+      {/* Player Progress */}
+      <div className="mb-4">
+        <PlayerProgress
+          profile={profile}
+          dailyChallenge={dailyChallenge}
+          dailyProgress={dailyProgress}
+        />
       </div>
 
       {/* Preset cards */}
@@ -174,17 +195,26 @@ export default function GameLobby({
         >
           Start Battle!
         </button>
-        <button
-          onClick={onQuickStart}
-          className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold text-base
-            px-6 py-3 rounded-xl active:scale-95 transition-transform"
-        >
-          Quick Start
-        </button>
+        <div className="flex gap-3 w-full">
+          <button
+            onClick={onQuickStart}
+            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold text-base
+              px-4 py-3 rounded-xl active:scale-95 transition-transform"
+          >
+            Quick Start
+          </button>
+          <button
+            onClick={onStartPractice}
+            className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-bold text-base
+              px-4 py-3 rounded-xl active:scale-95 transition-transform shadow-lg shadow-violet-600/30"
+          >
+            Practice
+          </button>
+        </div>
       </div>
 
       {/* Footer actions */}
-      <div className="flex gap-3 mt-5">
+      <div className="flex gap-3 mt-5 mb-4">
         <button
           onClick={onOpenSetup}
           className="text-gray-400 hover:text-white text-sm font-medium px-3 py-2
