@@ -61,9 +61,11 @@ export default function GameControls({
   difficulty,
   operatorMode,
   gameMode,
+  soundEnabled,
   onDifficultyChange,
   onOperatorModeChange,
   onGameModeChange,
+  onSoundToggle,
   onNewRound,
   onResetAll,
 }: GameControlsProps) {
@@ -96,8 +98,20 @@ export default function GameControls({
 
       <div className="w-px h-6 bg-gray-600 hidden sm:block" />
 
-      {/* Placeholder for future sound toggle */}
-      {/* <SoundToggle enabled={soundOn} onToggle={setSoundOn} /> */}
+      {/* Sound toggle */}
+      <button
+        onClick={onSoundToggle}
+        className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors active:scale-95 ${
+          soundEnabled
+            ? "bg-amber-500 text-gray-900"
+            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+        }`}
+        aria-label={soundEnabled ? "Mute sounds" : "Enable sounds"}
+      >
+        {soundEnabled ? "\u{1F50A} Sound" : "\u{1F507} Muted"}
+      </button>
+
+      <div className="w-px h-6 bg-gray-600 hidden sm:block" />
 
       <button
         onClick={onNewRound}

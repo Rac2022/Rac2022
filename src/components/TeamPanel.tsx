@@ -24,27 +24,40 @@ const TEAM_COLORS = {
   },
 } as const;
 
+function getStreakLabel(streak: number): string | null {
+  if (streak >= 5) return "Unstoppable!";
+  if (streak >= 3) return "Hot streak!";
+  if (streak >= 2) return "Nice!";
+  return null;
+}
+
 export default function TeamPanel({
   team,
   question,
   onCorrectAnswer,
+  onWrongAnswer,
+  onKeypadTap,
   disabled,
   score,
+  streak,
 }: TeamPanelProps) {
   const [input, setInput] = useState("");
   const [shake, setShake] = useState(false);
   const [flash, setFlash] = useState(false);
   const colors = TEAM_COLORS[team];
 
+  const streakLabel = getStreakLabel(streak);
+
   const handleNumber = useCallback(
     (num: string) => {
       if (disabled) return;
+      onKeypadTap();
       setInput((prev) => {
         if (prev.length >= 4) return prev;
         return prev + num;
       });
     },
-    [disabled]
+    [disabled, onKeypadTap]
   );
 
   const handleClear = useCallback(() => {
@@ -63,8 +76,9 @@ export default function TeamPanel({
       setShake(true);
       setTimeout(() => setShake(false), 500);
       setInput("");
+      onWrongAnswer();
     }
-  }, [disabled, input, question.answer, onCorrectAnswer]);
+  }, [disabled, input, question.answer, onCorrectAnswer, onWrongAnswer]);
 
   const keypadNumbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 
@@ -92,11 +106,19 @@ export default function TeamPanel({
           shake ? "animate-[shake_0.5s_ease-in-out]" : ""
         }`}
       >
-        <div className={`${colors.accent} rounded-2xl p-4 sm:p-5 text-center shadow-lg`}>
+        <div className={`${colors.accent} rounded-2xl p-4 sm:p-5 text-center shadow-lg relative`}>
           <p className={`text-lg ${colors.text} font-medium mb-1`}>Solve:</p>
           <p className="text-4xl sm:text-5xl font-extrabold text-white">
             {question.display}
           </p>
+
+          {/* Streak badge */}
+          {streakLabel && (
+            <div className="absolute -top-3 -right-2 px-2.5 py-0.5 rounded-full bg-yellow-400 text-yellow-900 text-xs sm:text-sm font-extrabold shadow-md animate-bounce">
+              {streak >= 5 ? "\u{1F525}" : streak >= 3 ? "\u{1F525}" : "\u{2B50}"}{" "}
+              {streakLabel}
+            </div>
+          )}
         </div>
 
         {/* Answer input */}

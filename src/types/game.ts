@@ -43,13 +43,22 @@ export interface GameScore {
   team2: number;
 }
 
+/** Per-team streak counts */
+export interface Streaks {
+  team1: number;
+  team2: number;
+}
+
 /** Props for the TeamPanel component */
 export interface TeamPanelProps {
   team: TeamId;
   question: MathQuestion;
   onCorrectAnswer: () => void;
+  onWrongAnswer: () => void;
+  onKeypadTap: () => void;
   disabled: boolean;
   score: number;
+  streak: number;
 }
 
 /** Props for the TugArena component */
@@ -64,9 +73,11 @@ export interface GameControlsProps {
   difficulty: Difficulty;
   operatorMode: OperatorMode;
   gameMode: GameMode;
+  soundEnabled: boolean;
   onDifficultyChange: (d: Difficulty) => void;
   onOperatorModeChange: (o: OperatorMode) => void;
   onGameModeChange: (m: GameMode) => void;
+  onSoundToggle: () => void;
   onNewRound: () => void;
   onResetAll: () => void;
 }
