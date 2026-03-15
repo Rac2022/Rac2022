@@ -4,16 +4,23 @@ import { useState, useCallback, useEffect } from "react";
 import TeamPanel from "./TeamPanel";
 import TugArena from "./TugArena";
 import { generateQuestion } from "@/utils/generateQuestion";
-import type { TeamId, TeamQuestions, GameScore } from "@/types/game";
+import type { TeamId, TeamQuestions, GameScore, Difficulty } from "@/types/game";
 
 const WIN_ZONE = 5; // steps to win from center
+const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
+  { value: 'easy',   label: 'Easy' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'hard',   label: 'Hard' },
+  { value: 'mixed',  label: 'Mixed' },
+];
 
 export default function GameBoard() {
+  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [position, setPosition] = useState(0);
   const [score, setScore] = useState<GameScore>({ team1: 0, team2: 0 });
   const [questions, setQuestions] = useState<TeamQuestions>({
-    team1: generateQuestion(),
-    team2: generateQuestion(),
+    team1: generateQuestion('easy'),
+    team2: generateQuestion('easy'),
   });
   const [winner, setWinner] = useState<TeamId | null>(null);
   const [showWinBanner, setShowWinBanner] = useState(false);
@@ -33,20 +40,20 @@ export default function GameBoard() {
 
   const handleTeam1Correct = useCallback(() => {
     setPosition((prev) => prev - 1);
-    setQuestions((prev) => ({ ...prev, team1: generateQuestion() }));
-  }, []);
+    setQuestions((prev) => ({ ...prev, team1: generateQuestion(difficulty) }));
+  }, [difficulty]);
 
   const handleTeam2Correct = useCallback(() => {
     setPosition((prev) => prev + 1);
-    setQuestions((prev) => ({ ...prev, team2: generateQuestion() }));
-  }, []);
+    setQuestions((prev) => ({ ...prev, team2: generateQuestion(difficulty) }));
+  }, [difficulty]);
 
   const resetRound = useCallback(() => {
     setPosition(0);
     setWinner(null);
     setShowWinBanner(false);
-    setQuestions({ team1: generateQuestion(), team2: generateQuestion() });
-  }, []);
+    setQuestions({ team1: generateQuestion(difficulty), team2: generateQuestion(difficulty) });
+  }, [difficulty]);
 
   const resetAll = useCallback(() => {
     resetRound();
@@ -85,8 +92,29 @@ export default function GameBoard() {
         </div>
       </div>
 
-      {/* Bottom bar with reset */}
-      <div className="bg-gray-800 py-2 px-4 flex items-center justify-center gap-4">
+      {/* Bottom bar with difficulty + reset */}
+      <div className="bg-gray-800 py-2 px-4 flex items-center justify-center gap-3 flex-wrap">
+        {/* Difficulty selector */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-gray-400 text-xs sm:text-sm font-medium mr-1">Difficulty:</span>
+          {DIFFICULTY_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setDifficulty(opt.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors
+                active:scale-95 ${
+                  difficulty === opt.value
+                    ? "bg-amber-500 text-gray-900"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-6 bg-gray-600 hidden sm:block" />
+
         <button
           onClick={resetRound}
           className="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold text-sm sm:text-base

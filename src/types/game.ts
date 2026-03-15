@@ -1,10 +1,17 @@
 /** Identifies which team a player belongs to */
 export type TeamId = 1 | 2;
 
+/** Difficulty preset for question generation */
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'mixed';
+
+/** Supported math operators */
+export type Operator = '+' | '-' | '×' | '÷';
+
 /** A generated math problem with its computed answer */
 export interface MathQuestion {
   a: number;
   b: number;
+  operator: Operator;
   answer: number;
   display: string;
 }
