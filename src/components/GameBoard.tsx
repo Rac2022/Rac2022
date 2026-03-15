@@ -6,9 +6,12 @@ import TugArena from "./TugArena";
 import ScoreBoard from "./ScoreBoard";
 import GameControls from "./GameControls";
 import VictoryOverlay from "./VictoryOverlay";
+import TeacherSetup from "./TeacherSetup";
 import { generateQuestion } from "@/utils/generateQuestion";
 import { getTheme } from "@/utils/themes";
 import { getPreset } from "@/utils/presets";
+import { parseCustomQuestions, customToMathQuestion, shuffle } from "@/utils/parseCustomQuestions";
+import { saveSettings } from "@/utils/storage";
 import {
   playTap,
   playCorrect,
@@ -30,9 +33,10 @@ import type {
   ThemeId,
   PresetId,
   QuestionRules,
+  GameSettings,
+  CustomQuestion,
+  MathQuestion,
 } from "@/types/game";
-
-const DEFAULT_PRESET: PresetId = "grade2-warmup";
 
 const RUSH_DURATIONS: Record<GameMode, number | null> = {
   classic: null,
@@ -53,35 +57,102 @@ function makeQuestions(
   };
 }
 
-export default function GameBoard() {
-  const [presetId, setPresetId] = useState<PresetId>(DEFAULT_PRESET);
-  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
-  const [operatorMode, setOperatorMode] = useState<OperatorMode>("mixed");
-  const [gameMode, setGameMode] = useState<GameMode>("classic");
-  const [themeId, setThemeId] = useState<ThemeId>("dino");
-  const [winZone, setWinZone] = useState(5);
-  const [questionRules, setQuestionRules] = useState<QuestionRules | undefined>(
-    getPreset(DEFAULT_PRESET).questionRules
-  );
-  const [soundEnabled, setSoundEnabled] = useState(true);
+interface GameBoardProps {
+  initialSettings: GameSettings;
+  onBackToLobby: () => void;
+  onSettingsChanged: (s: GameSettings) => void;
+}
+
+export default function GameBoard({
+  initialSettings,
+  onBackToLobby,
+  onSettingsChanged,
+}: GameBoardProps) {
+  // ── Settings state ────────────────────────────────────────────────
+  const [presetId, setPresetId] = useState<PresetId>(initialSettings.presetId);
+  const [difficulty, setDifficulty] = useState<Difficulty>(initialSettings.difficulty);
+  const [operatorMode, setOperatorMode] = useState<OperatorMode>(initialSettings.operatorMode);
+  const [gameMode, setGameMode] = useState<GameMode>(initialSettings.gameMode);
+  const [themeId, setThemeId] = useState<ThemeId>(initialSettings.themeId);
+  const [winZone, setWinZone] = useState(initialSettings.winZone);
+  const [soundEnabled, setSoundEnabled] = useState(initialSettings.soundEnabled);
+  const [customQuestionsText, setCustomQuestionsText] = useState(initialSettings.customQuestionsText);
+
+  // ── Derived ───────────────────────────────────────────────────────
+  const preset = getPreset(presetId);
+  const theme = getTheme(themeId);
+  const questionRules = preset.questionRules;
+  const customQuestions = parseCustomQuestions(customQuestionsText);
+  const useCustom = customQuestions.length > 0;
+
+  // ── Custom question pool ──────────────────────────────────────────
+  const customPoolRef = useRef<CustomQuestion[]>([]);
+  const customIdxRef = useRef({ team1: 0, team2: 0 });
+
+  const refreshCustomPool = useCallback(() => {
+    const parsed = parseCustomQuestions(customQuestionsText);
+    if (parsed.length > 0) {
+      customPoolRef.current = shuffle(parsed);
+      customIdxRef.current = { team1: 0, team2: 0 };
+    }
+  }, [customQuestionsText]);
+
+  const nextCustomQuestion = useCallback((teamKey: "team1" | "team2"): MathQuestion => {
+    const pool = customPoolRef.current;
+    if (pool.length === 0) {
+      return generateQuestion({ difficulty, operatorMode, rules: questionRules });
+    }
+    const idx = customIdxRef.current[teamKey];
+    const q = pool[idx % pool.length];
+    customIdxRef.current[teamKey] = idx + 1;
+    // Reshuffle when both teams have cycled through
+    if (
+      customIdxRef.current.team1 >= pool.length &&
+      customIdxRef.current.team2 >= pool.length
+    ) {
+      customPoolRef.current = shuffle(pool);
+      customIdxRef.current = { team1: 0, team2: 0 };
+    }
+    return customToMathQuestion(q);
+  }, [difficulty, operatorMode, questionRules]);
+
+  // ── Game state ────────────────────────────────────────────────────
+  const getInitialQuestions = (): TeamQuestions => {
+    if (useCustom) {
+      refreshCustomPool();
+      return {
+        team1: nextCustomQuestion("team1"),
+        team2: nextCustomQuestion("team2"),
+      };
+    }
+    return makeQuestions(difficulty, operatorMode, questionRules);
+  };
+
   const [position, setPosition] = useState(0);
   const [score, setScore] = useState<GameScore>({ team1: 0, team2: 0 });
   const [streaks, setStreaks] = useState<Streaks>(ZERO_STREAKS);
-  const [questions, setQuestions] = useState<TeamQuestions>(
-    makeQuestions("easy", "mixed", getPreset(DEFAULT_PRESET).questionRules)
-  );
+  const [questions, setQuestions] = useState<TeamQuestions>(() => getInitialQuestions());
   const [roundResult, setRoundResult] = useState<RoundResult>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-
-  const theme = getTheme(themeId);
-  const preset = getPreset(presetId);
+  const [setupOpen, setSetupOpen] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const warnedRef = useRef(false);
   const soundRef = useRef(soundEnabled);
   soundRef.current = soundEnabled;
 
   const roundOver = roundResult !== null;
+
+  // ── Sync settings back to parent ──────────────────────────────────
+  const buildSettings = useCallback((): GameSettings => ({
+    presetId, themeId, gameMode, difficulty, operatorMode,
+    winZone, soundEnabled, customQuestionsText,
+  }), [presetId, themeId, gameMode, difficulty, operatorMode, winZone, soundEnabled, customQuestionsText]);
+
+  useEffect(() => {
+    const s = buildSettings();
+    onSettingsChanged(s);
+    saveSettings(s);
+  }, [buildSettings, onSettingsChanged]);
 
   // ── Sound helper ──────────────────────────────────────────────────
   const sfx = useCallback((fn: () => void) => {
@@ -99,7 +170,6 @@ export default function GameBoard() {
   const startTimer = useCallback(
     (seconds: number) => {
       clearTimer();
-      warnedRef.current = false;
       setTimeLeft(seconds);
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
@@ -116,7 +186,17 @@ export default function GameBoard() {
 
   useEffect(() => clearTimer, [clearTimer]);
 
-  // ── Warning sound at <=5 seconds ─────────────────────────────────
+  // ── Start timer on mount if rush mode ─────────────────────────────
+  useEffect(() => {
+    const duration = RUSH_DURATIONS[gameMode];
+    if (duration !== null) {
+      startTimer(duration);
+    }
+    // Only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Warning sound at <=5 seconds ──────────────────────────────────
   useEffect(() => {
     if (timeLeft === null || timeLeft > 5 || timeLeft === 0 || roundOver) return;
     sfx(playWarning);
@@ -177,6 +257,16 @@ export default function GameBoard() {
   }, [position, gameMode, winZone, roundOver, clearTimer, sfx]);
 
   // ── Handlers ──────────────────────────────────────────────────────
+  const getNextQuestion = useCallback(
+    (teamKey: "team1" | "team2"): MathQuestion => {
+      if (useCustom) {
+        return nextCustomQuestion(teamKey);
+      }
+      return generateQuestion({ difficulty, operatorMode, rules: questionRules });
+    },
+    [useCustom, nextCustomQuestion, difficulty, operatorMode, questionRules]
+  );
+
   const handleCorrect = useCallback(
     (team: TeamId) => {
       sfx(playCorrect);
@@ -185,19 +275,13 @@ export default function GameBoard() {
       setStreaks((prev) => ({ ...prev, [key]: prev[key] + 1 }));
       if (team === 1) {
         setPosition((prev) => prev - 1);
-        setQuestions((prev) => ({
-          ...prev,
-          team1: generateQuestion({ difficulty, operatorMode, rules: questionRules }),
-        }));
+        setQuestions((prev) => ({ ...prev, team1: getNextQuestion("team1") }));
       } else {
         setPosition((prev) => prev + 1);
-        setQuestions((prev) => ({
-          ...prev,
-          team2: generateQuestion({ difficulty, operatorMode, rules: questionRules }),
-        }));
+        setQuestions((prev) => ({ ...prev, team2: getNextQuestion("team2") }));
       }
     },
-    [difficulty, operatorMode, questionRules, sfx]
+    [sfx, getNextQuestion]
   );
 
   const handleWrong = useCallback(
@@ -223,7 +307,16 @@ export default function GameBoard() {
     setPosition(0);
     setRoundResult(null);
     setStreaks(ZERO_STREAKS);
-    setQuestions(makeQuestions(difficulty, operatorMode, questionRules));
+
+    if (useCustom) {
+      refreshCustomPool();
+      setQuestions({
+        team1: nextCustomQuestion("team1"),
+        team2: nextCustomQuestion("team2"),
+      });
+    } else {
+      setQuestions(makeQuestions(difficulty, operatorMode, questionRules));
+    }
 
     const duration = RUSH_DURATIONS[gameMode];
     if (duration !== null) {
@@ -231,65 +324,32 @@ export default function GameBoard() {
     } else {
       setTimeLeft(null);
     }
-  }, [difficulty, operatorMode, questionRules, gameMode, clearTimer, startTimer]);
+  }, [difficulty, operatorMode, questionRules, gameMode, useCustom, refreshCustomPool, nextCustomQuestion, clearTimer, startTimer]);
 
   const resetAll = useCallback(() => {
     resetRound();
     setScore({ team1: 0, team2: 0 });
   }, [resetRound]);
 
-  const handleGameModeChange = useCallback(
-    (mode: GameMode) => {
-      setGameMode(mode);
-      clearTimer();
-      setPosition(0);
-      setRoundResult(null);
-      setStreaks(ZERO_STREAKS);
-      setQuestions(makeQuestions(difficulty, operatorMode, questionRules));
-
-      const duration = RUSH_DURATIONS[mode];
-      if (duration !== null) {
-        startTimer(duration);
-      } else {
-        setTimeLeft(null);
-      }
-    },
-    [difficulty, operatorMode, questionRules, clearTimer, startTimer]
-  );
-
-  const handlePresetChange = useCallback(
-    (id: PresetId) => {
-      const p = getPreset(id);
-      setPresetId(id);
-      setDifficulty(p.difficulty);
-      setOperatorMode(p.operatorMode);
-      setGameMode(p.gameMode);
-      setThemeId(p.themeId);
-      setWinZone(p.winZone);
-      setQuestionRules(p.questionRules);
-
-      // Reset round with new preset settings
-      clearTimer();
-      setPosition(0);
-      setRoundResult(null);
-      setStreaks(ZERO_STREAKS);
-      setQuestions(makeQuestions(p.difficulty, p.operatorMode, p.questionRules));
-
-      const duration = RUSH_DURATIONS[p.gameMode];
-      if (duration !== null) {
-        startTimer(duration);
-      } else {
-        setTimeLeft(null);
-      }
-    },
-    [clearTimer, startTimer]
-  );
-
   const handleSoundToggle = useCallback(() => {
     setSoundEnabled((prev) => !prev);
   }, []);
 
+  // ── Teacher Setup integration ─────────────────────────────────────
+  const handleSetupSettingsChange = useCallback((s: GameSettings) => {
+    setPresetId(s.presetId);
+    setDifficulty(s.difficulty);
+    setOperatorMode(s.operatorMode);
+    setGameMode(s.gameMode);
+    setThemeId(s.themeId);
+    setWinZone(s.winZone);
+    setSoundEnabled(s.soundEnabled);
+    setCustomQuestionsText(s.customQuestionsText);
+  }, []);
+
   // ── Render ────────────────────────────────────────────────────────
+  const allowNegatives = preset.questionRules.allowNegatives;
+
   return (
     <div className={`h-dvh w-full flex flex-col ${theme.appBg} overflow-hidden select-none`}>
       <ScoreBoard
@@ -315,12 +375,13 @@ export default function GameBoard() {
             score={score.team1}
             streak={streaks.team1}
             colors={theme.team1}
+            teamIcon={theme.team1Icon}
+            allowNegatives={allowNegatives}
           />
         </div>
 
         <div className="w-20 sm:w-28 md:w-36 shrink-0">
           <TugArena position={position} winZone={winZone} theme={theme} />
-
         </div>
 
         <div className="flex-1 min-w-0">
@@ -334,25 +395,19 @@ export default function GameBoard() {
             score={score.team2}
             streak={streaks.team2}
             colors={theme.team2}
+            teamIcon={theme.team2Icon}
+            allowNegatives={allowNegatives}
           />
         </div>
       </div>
 
       <GameControls
-        presetId={presetId}
-        difficulty={difficulty}
-        operatorMode={operatorMode}
-        gameMode={gameMode}
-        themeId={themeId}
         soundEnabled={soundEnabled}
-        onPresetChange={handlePresetChange}
-        onDifficultyChange={setDifficulty}
-        onOperatorModeChange={setOperatorMode}
-        onGameModeChange={handleGameModeChange}
-        onThemeChange={setThemeId}
         onSoundToggle={handleSoundToggle}
         onNewRound={resetRound}
         onResetAll={resetAll}
+        onOpenSetup={() => setSetupOpen(true)}
+        onBackToLobby={onBackToLobby}
       />
 
       {roundResult !== null && (
@@ -363,6 +418,13 @@ export default function GameBoard() {
           theme={theme}
         />
       )}
+
+      <TeacherSetup
+        open={setupOpen}
+        onClose={() => setSetupOpen(false)}
+        settings={buildSettings()}
+        onSettingsChange={handleSetupSettingsChange}
+      />
     </div>
   );
 }

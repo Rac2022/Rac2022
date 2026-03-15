@@ -33,11 +33,8 @@ export interface QuestionRules {
   minNumber: number;
   maxNumber: number;
   allowedOperators: Operator[];
-  /** Allow carrying/borrowing (regrouping) in addition/subtraction */
   allowRegrouping: boolean;
-  /** Division must produce whole-number results */
   requireWholeNumberDivision: boolean;
-  /** Allow negative answers (subtraction where b > a) */
   allowNegatives: boolean;
 }
 
@@ -54,6 +51,24 @@ export interface PresetConfig {
   questionRules: QuestionRules;
 }
 
+/** A custom question provided by the teacher */
+export interface CustomQuestion {
+  display: string;
+  answer: number;
+}
+
+/** Persisted game settings */
+export interface GameSettings {
+  presetId: PresetId;
+  themeId: ThemeId;
+  gameMode: GameMode;
+  difficulty: Difficulty;
+  operatorMode: OperatorMode;
+  winZone: number;
+  soundEnabled: boolean;
+  customQuestionsText: string;
+}
+
 // ── Theme configuration ─────────────────────────────────────────────
 
 /** Tailwind class strings for a single team's visuals */
@@ -64,21 +79,15 @@ export interface TeamColors {
   accent: string;
   text: string;
   label: string;
-  /** Dot color in scoreboard */
   dot: string;
-  /** Label color in scoreboard */
   scoreLabel: string;
-  /** Win-zone rgba base (used for dynamic opacity in TugArena) */
   winZoneRgb: string;
-  /** Knot / glow rgb for TugArena marker */
   knotRgb: string;
   knotBorderRgb: string;
   knotGlowRgba: string;
-  /** Victory overlay gradient + glow */
   victoryGlow: string;
   victoryGradient: string;
   victoryBorder: string;
-  /** Status badge in scoreboard */
   statusBg: string;
   statusText: string;
 }
@@ -87,47 +96,35 @@ export interface TeamColors {
 export interface ThemeConfig {
   id: ThemeId;
   label: string;
-  /** Emoji shown in theme selector */
   icon: string;
-  /** App shell background */
   appBg: string;
-  /** Scoreboard bar background */
   scoreboardBg: string;
-  /** Controls bar background */
   controlsBg: string;
-  /** TugArena background gradient */
   arenaBg: string;
-  /** Arena title text color */
   arenaTitle: string;
-  /** Arena center-line dash color */
   arenaCenterLine: string;
-  /** Arena center dot */
   arenaCenterDot: string;
   arenaCenterDotBorder: string;
-  /** Rope gradient classes */
   ropeGradient: string;
   ropeBorder: string;
   ropeTexture: string;
-  /** Flag gradient + text */
   flagGradient: string;
   flagBorder: string;
   flagText: string;
-  /** Step indicator center dot */
   stepCenter: string;
-  /** Team-specific colors */
   team1: TeamColors;
   team2: TeamColors;
-  /** Victory overlay tie variant */
+  /** Team avatar icons (emoji) */
+  team1Icon: string;
+  team2Icon: string;
   tieGlow: string;
   tieGradient: string;
   tieBorder: string;
-  /** Labels */
   team1WinLabel: string;
   team2WinLabel: string;
   winSubtitle: string;
   tieTitle: string;
   tieSubtitle: string;
-  /** Icons for victory */
   winIcon: string;
   tieIcon: string;
 }
@@ -166,7 +163,8 @@ export interface Streaks {
   team2: number;
 }
 
-/** Props for the TeamPanel component */
+// ── Component props ─────────────────────────────────────────────────
+
 export interface TeamPanelProps {
   team: TeamId;
   question: MathQuestion;
@@ -177,34 +175,25 @@ export interface TeamPanelProps {
   score: number;
   streak: number;
   colors: TeamColors;
+  teamIcon: string;
+  allowNegatives?: boolean;
 }
 
-/** Props for the TugArena component */
 export interface TugArenaProps {
   position: number;
   winZone: number;
   theme: ThemeConfig;
 }
 
-/** Props for the GameControls component */
 export interface GameControlsProps {
-  presetId: PresetId;
-  difficulty: Difficulty;
-  operatorMode: OperatorMode;
-  gameMode: GameMode;
-  themeId: ThemeId;
   soundEnabled: boolean;
-  onPresetChange: (p: PresetId) => void;
-  onDifficultyChange: (d: Difficulty) => void;
-  onOperatorModeChange: (o: OperatorMode) => void;
-  onGameModeChange: (m: GameMode) => void;
-  onThemeChange: (t: ThemeId) => void;
   onSoundToggle: () => void;
   onNewRound: () => void;
   onResetAll: () => void;
+  onOpenSetup: () => void;
+  onBackToLobby: () => void;
 }
 
-/** Props for the ScoreBoard component */
 export interface ScoreBoardProps {
   score: GameScore;
   presetLabel: string;
@@ -216,7 +205,6 @@ export interface ScoreBoardProps {
   theme: ThemeConfig;
 }
 
-/** Props for the VictoryOverlay component */
 export interface VictoryOverlayProps {
   result: RoundResult;
   onPlayAgain: () => void;

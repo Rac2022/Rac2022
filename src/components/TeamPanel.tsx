@@ -20,8 +20,11 @@ export default function TeamPanel({
   score,
   streak,
   colors,
+  teamIcon,
+  allowNegatives = false,
 }: TeamPanelProps) {
   const [input, setInput] = useState("");
+  const [isNegative, setIsNegative] = useState(false);
   const [shake, setShake] = useState(false);
   const [flash, setFlash] = useState(false);
 
@@ -41,25 +44,34 @@ export default function TeamPanel({
 
   const handleClear = useCallback(() => {
     setInput("");
+    setIsNegative(false);
+  }, []);
+
+  const handleNegativeToggle = useCallback(() => {
+    setIsNegative((prev) => !prev);
   }, []);
 
   const handleSubmit = useCallback(() => {
     if (disabled || input === "") return;
-    const answer = parseInt(input, 10);
+    const value = parseInt(input, 10);
+    const answer = isNegative ? -value : value;
     if (answer === question.answer) {
       setFlash(true);
       setTimeout(() => setFlash(false), 400);
       setInput("");
+      setIsNegative(false);
       onCorrectAnswer();
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
       setInput("");
+      setIsNegative(false);
       onWrongAnswer();
     }
-  }, [disabled, input, question.answer, onCorrectAnswer, onWrongAnswer]);
+  }, [disabled, input, isNegative, question.answer, onCorrectAnswer, onWrongAnswer]);
 
   const keypadNumbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+  const displayValue = input ? (isNegative ? `-${input}` : input) : "";
 
   return (
     <div
@@ -69,9 +81,12 @@ export default function TeamPanel({
     >
       {/* Team header + score */}
       <div className="text-center w-full">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wider">
-          {colors.label}
-        </h2>
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-2xl">{teamIcon}</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wider">
+            {colors.label}
+          </h2>
+        </div>
         <div className={`mt-1 inline-block px-4 py-1 rounded-full ${colors.accent}`}>
           <span className="text-white text-lg sm:text-xl font-bold">
             Score: {score}
@@ -103,7 +118,7 @@ export default function TeamPanel({
         {/* Answer input */}
         <div className="mt-3 bg-white rounded-xl p-3 text-center shadow-inner">
           <p className="text-3xl sm:text-4xl font-bold text-gray-800 min-h-[2.5rem]">
-            {input || <span className="text-gray-300">?</span>}
+            {displayValue || <span className="text-gray-300">?</span>}
           </p>
         </div>
       </div>
@@ -127,7 +142,21 @@ export default function TeamPanel({
         </div>
 
         {/* Action buttons */}
-        <div className="grid grid-cols-2 gap-2 mt-2">
+        <div className={`grid gap-2 mt-2 ${allowNegatives ? "grid-cols-3" : "grid-cols-2"}`}>
+          {allowNegatives && (
+            <button
+              onClick={handleNegativeToggle}
+              disabled={disabled}
+              className={`text-xl sm:text-2xl font-bold rounded-xl py-3 sm:py-4
+                active:scale-95 transition-all duration-100 disabled:opacity-40 shadow-md select-none ${
+                isNegative
+                  ? "bg-amber-400 text-gray-800"
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+              }`}
+            >
+              +/&minus;
+            </button>
+          )}
           <button
             onClick={handleClear}
             disabled={disabled}

@@ -66,6 +66,7 @@ export default function ScoreBoard({
     <div className={`${theme.scoreboardBg} backdrop-blur-sm px-4 py-1.5 flex items-center justify-between gap-4 text-sm border-b border-gray-700/50`}>
       {/* Team 1 score */}
       <div className="flex items-center gap-2">
+        <span className="text-lg">{theme.team1Icon}</span>
         <div className={`w-3 h-3 rounded-full ${t1.dot}`} />
         <span className={`${t1.scoreLabel} font-bold`}>{t1.label}</span>
         <span className="text-white font-extrabold text-lg tabular-nums">
@@ -118,6 +119,7 @@ export default function ScoreBoard({
         </span>
         <span className={`${t2.scoreLabel} font-bold`}>{t2.label}</span>
         <div className={`w-3 h-3 rounded-full ${t2.dot}`} />
+        <span className="text-lg">{theme.team2Icon}</span>
       </div>
     </div>
   );

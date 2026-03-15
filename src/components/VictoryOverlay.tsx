@@ -1,5 +1,6 @@
 "use client";
 
+import Confetti from "./Confetti";
 import type { VictoryOverlayProps } from "@/types/game";
 
 export default function VictoryOverlay({
@@ -17,6 +18,8 @@ export default function VictoryOverlay({
   let titleText: string;
   let subtitleText: string;
   let icon: string;
+  let teamIcon: string;
+  let confettiColor: string | undefined;
 
   if (isTie) {
     glowColor = theme.tieGlow;
@@ -25,6 +28,8 @@ export default function VictoryOverlay({
     titleText = theme.tieTitle;
     subtitleText = theme.tieSubtitle;
     icon = theme.tieIcon;
+    teamIcon = "";
+    confettiColor = undefined;
   } else if (isTeam1) {
     glowColor = theme.team1.victoryGlow;
     cardGradient = theme.team1.victoryGradient;
@@ -32,6 +37,8 @@ export default function VictoryOverlay({
     titleText = theme.team1WinLabel;
     subtitleText = theme.winSubtitle;
     icon = theme.winIcon;
+    teamIcon = theme.team1Icon;
+    confettiColor = theme.team1.knotRgb;
   } else {
     glowColor = theme.team2.victoryGlow;
     cardGradient = theme.team2.victoryGradient;
@@ -39,18 +46,26 @@ export default function VictoryOverlay({
     titleText = theme.team2WinLabel;
     subtitleText = theme.winSubtitle;
     icon = theme.winIcon;
+    teamIcon = theme.team2Icon;
+    confettiColor = theme.team2.knotRgb;
   }
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      {/* Celebration effect */}
+      <Confetti type={isTie ? "tie" : "win"} teamColor={confettiColor} />
+
       <div
         className={`absolute w-[500px] h-[500px] rounded-full opacity-20 blur-3xl ${glowColor}`}
       />
 
       <div
-        className={`relative text-center p-8 sm:p-10 rounded-3xl shadow-2xl border ${cardGradient} ${borderColor} animate-[bounceIn_0.5s_ease-out]`}
+        className={`relative text-center p-8 sm:p-10 rounded-3xl shadow-2xl border ${cardGradient} ${borderColor} animate-[bounceIn_0.5s_ease-out] z-10`}
       >
-        <div className="text-6xl sm:text-7xl mb-3">{icon}</div>
+        <div className="text-6xl sm:text-7xl mb-3">
+          {teamIcon && <span className="mr-2">{teamIcon}</span>}
+          {icon}
+        </div>
 
         <p className="text-5xl sm:text-7xl font-extrabold text-white mb-1 drop-shadow-lg">
           {titleText}
