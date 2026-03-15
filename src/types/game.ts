@@ -52,3 +52,28 @@ export interface TugArenaProps {
   position: number;
   winZone: number;
 }
+
+/** Props for the GameControls component */
+export interface GameControlsProps {
+  difficulty: Difficulty;
+  operatorMode: OperatorMode;
+  onDifficultyChange: (d: Difficulty) => void;
+  onOperatorModeChange: (o: OperatorMode) => void;
+  onNewRound: () => void;
+  onResetAll: () => void;
+}
+
+/** Props for the ScoreBoard component */
+export interface ScoreBoardProps {
+  score: GameScore;
+  difficulty: Difficulty;
+  operatorMode: OperatorMode;
+  winner: TeamId | null;
+}
+
+/** Props for the VictoryOverlay component */
+export interface VictoryOverlayProps {
+  winner: TeamId;
+  onPlayAgain: () => void;
+  onResetScores: () => void;
+}
