@@ -31,6 +31,7 @@ function formatTime(seconds: number): string {
 
 export default function ScoreBoard({
   score,
+  presetLabel,
   difficulty,
   operatorMode,
   gameMode,
@@ -74,6 +75,9 @@ export default function ScoreBoard({
 
       {/* Center info cluster */}
       <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
+        <span className="px-2 py-0.5 rounded bg-amber-700/30 text-amber-300 text-xs font-bold">
+          {presetLabel}
+        </span>
         <span className="hidden sm:inline px-2 py-0.5 rounded bg-gray-800 text-xs font-medium">
           {MODE_LABELS[gameMode]}
         </span>

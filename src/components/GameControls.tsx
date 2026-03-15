@@ -1,7 +1,8 @@
 "use client";
 
-import type { GameControlsProps, Difficulty, OperatorMode, GameMode, ThemeId } from "@/types/game";
+import type { GameControlsProps, Difficulty, OperatorMode, GameMode, ThemeId, PresetId } from "@/types/game";
 import { THEMES } from "@/utils/themes";
+import { PRESETS } from "@/utils/presets";
 
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
   { value: "easy", label: "Easy" },
@@ -29,6 +30,13 @@ const THEME_OPTIONS: { value: ThemeId; label: string }[] = (
 ).map((t) => ({
   value: t.id,
   label: `${t.icon} ${t.label}`,
+}));
+
+const PRESET_OPTIONS: { value: PresetId; label: string }[] = (
+  Object.values(PRESETS) as { id: PresetId; label: string }[]
+).map((p) => ({
+  value: p.id,
+  label: p.label,
 }));
 
 function ToggleGroup<T extends string>({
@@ -66,11 +74,13 @@ function ToggleGroup<T extends string>({
 }
 
 export default function GameControls({
+  presetId,
   difficulty,
   operatorMode,
   gameMode,
   themeId,
   soundEnabled,
+  onPresetChange,
   onDifficultyChange,
   onOperatorModeChange,
   onGameModeChange,
@@ -81,6 +91,15 @@ export default function GameControls({
 }: GameControlsProps) {
   return (
     <div className="bg-gray-800 py-2 px-4 flex items-center justify-center gap-3 flex-wrap">
+      <ToggleGroup
+        label="Preset"
+        options={PRESET_OPTIONS}
+        value={presetId}
+        onChange={onPresetChange}
+      />
+
+      <div className="w-px h-6 bg-gray-600 hidden sm:block" />
+
       <ToggleGroup
         label="Theme"
         options={THEME_OPTIONS}

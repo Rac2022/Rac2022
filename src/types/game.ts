@@ -19,6 +19,41 @@ export type RoundResult = TeamId | 'tie' | null;
 /** Available visual themes */
 export type ThemeId = 'classic' | 'space' | 'dino' | 'soccer';
 
+/** Grade-based preset identifiers */
+export type PresetId =
+  | 'grade2-warmup'
+  | 'grade2-mixed'
+  | 'grade3-facts'
+  | 'grade3-rush'
+  | 'grade4-challenge'
+  | 'grade5-battle';
+
+/** Rule-based constraints for question generation */
+export interface QuestionRules {
+  minNumber: number;
+  maxNumber: number;
+  allowedOperators: Operator[];
+  /** Allow carrying/borrowing (regrouping) in addition/subtraction */
+  allowRegrouping: boolean;
+  /** Division must produce whole-number results */
+  requireWholeNumberDivision: boolean;
+  /** Allow negative answers (subtraction where b > a) */
+  allowNegatives: boolean;
+}
+
+/** Full preset configuration */
+export interface PresetConfig {
+  id: PresetId;
+  label: string;
+  description: string;
+  difficulty: Difficulty;
+  operatorMode: OperatorMode;
+  gameMode: GameMode;
+  winZone: number;
+  themeId: ThemeId;
+  questionRules: QuestionRules;
+}
+
 // ── Theme configuration ─────────────────────────────────────────────
 
 /** Tailwind class strings for a single team's visuals */
@@ -101,6 +136,7 @@ export interface ThemeConfig {
 export interface QuestionConfig {
   difficulty?: Difficulty;
   operatorMode?: OperatorMode;
+  rules?: QuestionRules;
 }
 
 /** A generated math problem with its computed answer */
@@ -152,11 +188,13 @@ export interface TugArenaProps {
 
 /** Props for the GameControls component */
 export interface GameControlsProps {
+  presetId: PresetId;
   difficulty: Difficulty;
   operatorMode: OperatorMode;
   gameMode: GameMode;
   themeId: ThemeId;
   soundEnabled: boolean;
+  onPresetChange: (p: PresetId) => void;
   onDifficultyChange: (d: Difficulty) => void;
   onOperatorModeChange: (o: OperatorMode) => void;
   onGameModeChange: (m: GameMode) => void;
@@ -169,6 +207,7 @@ export interface GameControlsProps {
 /** Props for the ScoreBoard component */
 export interface ScoreBoardProps {
   score: GameScore;
+  presetLabel: string;
   difficulty: Difficulty;
   operatorMode: OperatorMode;
   gameMode: GameMode;

@@ -8,6 +8,7 @@ import GameControls from "./GameControls";
 import VictoryOverlay from "./VictoryOverlay";
 import { generateQuestion } from "@/utils/generateQuestion";
 import { getTheme } from "@/utils/themes";
+import { getPreset } from "@/utils/presets";
 import {
   playTap,
   playCorrect,
@@ -27,9 +28,11 @@ import type {
   GameMode,
   RoundResult,
   ThemeId,
+  PresetId,
+  QuestionRules,
 } from "@/types/game";
 
-const WIN_ZONE = 5;
+const DEFAULT_PRESET: PresetId = "grade2-warmup";
 
 const RUSH_DURATIONS: Record<GameMode, number | null> = {
   classic: null,
@@ -39,29 +42,39 @@ const RUSH_DURATIONS: Record<GameMode, number | null> = {
 
 const ZERO_STREAKS: Streaks = { team1: 0, team2: 0 };
 
-function makeQuestions(difficulty: Difficulty, operatorMode: OperatorMode): TeamQuestions {
+function makeQuestions(
+  difficulty: Difficulty,
+  operatorMode: OperatorMode,
+  rules?: QuestionRules
+): TeamQuestions {
   return {
-    team1: generateQuestion({ difficulty, operatorMode }),
-    team2: generateQuestion({ difficulty, operatorMode }),
+    team1: generateQuestion({ difficulty, operatorMode, rules }),
+    team2: generateQuestion({ difficulty, operatorMode, rules }),
   };
 }
 
 export default function GameBoard() {
+  const [presetId, setPresetId] = useState<PresetId>(DEFAULT_PRESET);
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [operatorMode, setOperatorMode] = useState<OperatorMode>("mixed");
   const [gameMode, setGameMode] = useState<GameMode>("classic");
-  const [themeId, setThemeId] = useState<ThemeId>("classic");
+  const [themeId, setThemeId] = useState<ThemeId>("dino");
+  const [winZone, setWinZone] = useState(5);
+  const [questionRules, setQuestionRules] = useState<QuestionRules | undefined>(
+    getPreset(DEFAULT_PRESET).questionRules
+  );
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [position, setPosition] = useState(0);
   const [score, setScore] = useState<GameScore>({ team1: 0, team2: 0 });
   const [streaks, setStreaks] = useState<Streaks>(ZERO_STREAKS);
   const [questions, setQuestions] = useState<TeamQuestions>(
-    makeQuestions("easy", "mixed")
+    makeQuestions("easy", "mixed", getPreset(DEFAULT_PRESET).questionRules)
   );
   const [roundResult, setRoundResult] = useState<RoundResult>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   const theme = getTheme(themeId);
+  const preset = getPreset(presetId);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const warnedRef = useRef(false);
@@ -130,30 +143,30 @@ export default function GameBoard() {
   // ── Classic win detection ─────────────────────────────────────────
   useEffect(() => {
     if (gameMode !== "classic" || roundOver) return;
-    if (position <= -WIN_ZONE) {
+    if (position <= -winZone) {
       setRoundResult(1);
       setScore((prev) => ({ ...prev, team1: prev.team1 + 1 }));
       sfx(playWin);
       setStreaks(ZERO_STREAKS);
-    } else if (position >= WIN_ZONE) {
+    } else if (position >= winZone) {
       setRoundResult(2);
       setScore((prev) => ({ ...prev, team2: prev.team2 + 1 }));
       sfx(playWin);
       setStreaks(ZERO_STREAKS);
     }
-  }, [position, gameMode, roundOver, sfx]);
+  }, [position, gameMode, winZone, roundOver, sfx]);
 
   // ── Rush win-zone early finish ────────────────────────────────────
   useEffect(() => {
     if (gameMode === "classic" || roundOver) return;
-    if (position <= -WIN_ZONE) {
+    if (position <= -winZone) {
       clearTimer();
       setTimeLeft(null);
       setRoundResult(1);
       setScore((prev) => ({ ...prev, team1: prev.team1 + 1 }));
       sfx(playWin);
       setStreaks(ZERO_STREAKS);
-    } else if (position >= WIN_ZONE) {
+    } else if (position >= winZone) {
       clearTimer();
       setTimeLeft(null);
       setRoundResult(2);
@@ -161,7 +174,7 @@ export default function GameBoard() {
       sfx(playWin);
       setStreaks(ZERO_STREAKS);
     }
-  }, [position, gameMode, roundOver, clearTimer, sfx]);
+  }, [position, gameMode, winZone, roundOver, clearTimer, sfx]);
 
   // ── Handlers ──────────────────────────────────────────────────────
   const handleCorrect = useCallback(
@@ -174,17 +187,17 @@ export default function GameBoard() {
         setPosition((prev) => prev - 1);
         setQuestions((prev) => ({
           ...prev,
-          team1: generateQuestion({ difficulty, operatorMode }),
+          team1: generateQuestion({ difficulty, operatorMode, rules: questionRules }),
         }));
       } else {
         setPosition((prev) => prev + 1);
         setQuestions((prev) => ({
           ...prev,
-          team2: generateQuestion({ difficulty, operatorMode }),
+          team2: generateQuestion({ difficulty, operatorMode, rules: questionRules }),
         }));
       }
     },
-    [difficulty, operatorMode, sfx]
+    [difficulty, operatorMode, questionRules, sfx]
   );
 
   const handleWrong = useCallback(
@@ -210,7 +223,7 @@ export default function GameBoard() {
     setPosition(0);
     setRoundResult(null);
     setStreaks(ZERO_STREAKS);
-    setQuestions(makeQuestions(difficulty, operatorMode));
+    setQuestions(makeQuestions(difficulty, operatorMode, questionRules));
 
     const duration = RUSH_DURATIONS[gameMode];
     if (duration !== null) {
@@ -218,7 +231,7 @@ export default function GameBoard() {
     } else {
       setTimeLeft(null);
     }
-  }, [difficulty, operatorMode, gameMode, clearTimer, startTimer]);
+  }, [difficulty, operatorMode, questionRules, gameMode, clearTimer, startTimer]);
 
   const resetAll = useCallback(() => {
     resetRound();
@@ -232,7 +245,7 @@ export default function GameBoard() {
       setPosition(0);
       setRoundResult(null);
       setStreaks(ZERO_STREAKS);
-      setQuestions(makeQuestions(difficulty, operatorMode));
+      setQuestions(makeQuestions(difficulty, operatorMode, questionRules));
 
       const duration = RUSH_DURATIONS[mode];
       if (duration !== null) {
@@ -241,7 +254,35 @@ export default function GameBoard() {
         setTimeLeft(null);
       }
     },
-    [difficulty, operatorMode, clearTimer, startTimer]
+    [difficulty, operatorMode, questionRules, clearTimer, startTimer]
+  );
+
+  const handlePresetChange = useCallback(
+    (id: PresetId) => {
+      const p = getPreset(id);
+      setPresetId(id);
+      setDifficulty(p.difficulty);
+      setOperatorMode(p.operatorMode);
+      setGameMode(p.gameMode);
+      setThemeId(p.themeId);
+      setWinZone(p.winZone);
+      setQuestionRules(p.questionRules);
+
+      // Reset round with new preset settings
+      clearTimer();
+      setPosition(0);
+      setRoundResult(null);
+      setStreaks(ZERO_STREAKS);
+      setQuestions(makeQuestions(p.difficulty, p.operatorMode, p.questionRules));
+
+      const duration = RUSH_DURATIONS[p.gameMode];
+      if (duration !== null) {
+        startTimer(duration);
+      } else {
+        setTimeLeft(null);
+      }
+    },
+    [clearTimer, startTimer]
   );
 
   const handleSoundToggle = useCallback(() => {
@@ -253,6 +294,7 @@ export default function GameBoard() {
     <div className={`h-dvh w-full flex flex-col ${theme.appBg} overflow-hidden select-none`}>
       <ScoreBoard
         score={score}
+        presetLabel={preset.label}
         difficulty={difficulty}
         operatorMode={operatorMode}
         gameMode={gameMode}
@@ -277,7 +319,8 @@ export default function GameBoard() {
         </div>
 
         <div className="w-20 sm:w-28 md:w-36 shrink-0">
-          <TugArena position={position} winZone={WIN_ZONE} theme={theme} />
+          <TugArena position={position} winZone={winZone} theme={theme} />
+
         </div>
 
         <div className="flex-1 min-w-0">
@@ -296,11 +339,13 @@ export default function GameBoard() {
       </div>
 
       <GameControls
+        presetId={presetId}
         difficulty={difficulty}
         operatorMode={operatorMode}
         gameMode={gameMode}
         themeId={themeId}
         soundEnabled={soundEnabled}
+        onPresetChange={handlePresetChange}
         onDifficultyChange={setDifficulty}
         onOperatorModeChange={setOperatorMode}
         onGameModeChange={handleGameModeChange}
