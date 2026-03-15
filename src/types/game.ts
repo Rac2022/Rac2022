@@ -10,6 +10,12 @@ export type Operator = '+' | '-' | '×' | '÷';
 /** Controls which operators appear in generated questions */
 export type OperatorMode = Operator | 'mixed';
 
+/** Game mode: classic (pull to win zone) or timed rush */
+export type GameMode = 'classic' | 'rush-30' | 'rush-60';
+
+/** Outcome of a completed round */
+export type RoundResult = TeamId | 'tie' | null;
+
 /** Configuration object for question generation */
 export interface QuestionConfig {
   difficulty?: Difficulty;
@@ -57,8 +63,10 @@ export interface TugArenaProps {
 export interface GameControlsProps {
   difficulty: Difficulty;
   operatorMode: OperatorMode;
+  gameMode: GameMode;
   onDifficultyChange: (d: Difficulty) => void;
   onOperatorModeChange: (o: OperatorMode) => void;
+  onGameModeChange: (m: GameMode) => void;
   onNewRound: () => void;
   onResetAll: () => void;
 }
@@ -68,12 +76,15 @@ export interface ScoreBoardProps {
   score: GameScore;
   difficulty: Difficulty;
   operatorMode: OperatorMode;
-  winner: TeamId | null;
+  gameMode: GameMode;
+  roundResult: RoundResult;
+  /** Seconds remaining in rush mode, null when not applicable */
+  timeLeft: number | null;
 }
 
 /** Props for the VictoryOverlay component */
 export interface VictoryOverlayProps {
-  winner: TeamId;
+  result: RoundResult;
   onPlayAgain: () => void;
   onResetScores: () => void;
 }

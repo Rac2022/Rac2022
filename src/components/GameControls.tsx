@@ -1,6 +1,6 @@
 "use client";
 
-import type { GameControlsProps, Difficulty, OperatorMode } from "@/types/game";
+import type { GameControlsProps, Difficulty, OperatorMode, GameMode } from "@/types/game";
 
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
   { value: "easy", label: "Easy" },
@@ -15,6 +15,12 @@ const OPERATOR_OPTIONS: { value: OperatorMode; label: string }[] = [
   { value: "-", label: "\u2212" },
   { value: "\u00d7", label: "\u00d7" },
   { value: "\u00f7", label: "\u00f7" },
+];
+
+const MODE_OPTIONS: { value: GameMode; label: string }[] = [
+  { value: "classic", label: "Classic" },
+  { value: "rush-30", label: "30s Rush" },
+  { value: "rush-60", label: "60s Rush" },
 ];
 
 function ToggleGroup<T extends string>({
@@ -54,13 +60,24 @@ function ToggleGroup<T extends string>({
 export default function GameControls({
   difficulty,
   operatorMode,
+  gameMode,
   onDifficultyChange,
   onOperatorModeChange,
+  onGameModeChange,
   onNewRound,
   onResetAll,
 }: GameControlsProps) {
   return (
     <div className="bg-gray-800 py-2 px-4 flex items-center justify-center gap-3 flex-wrap">
+      <ToggleGroup
+        label="Mode"
+        options={MODE_OPTIONS}
+        value={gameMode}
+        onChange={onGameModeChange}
+      />
+
+      <div className="w-px h-6 bg-gray-600 hidden sm:block" />
+
       <ToggleGroup
         label="Difficulty"
         options={DIFFICULTY_OPTIONS}
