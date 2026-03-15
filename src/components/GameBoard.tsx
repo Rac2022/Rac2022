@@ -3,18 +3,19 @@
 import { useState, useCallback, useEffect } from "react";
 import TeamPanel from "./TeamPanel";
 import TugArena from "./TugArena";
-import { generateQuestion, type MathQuestion } from "@/utils/generateQuestion";
+import { generateQuestion } from "@/utils/generateQuestion";
+import type { TeamId, TeamQuestions, GameScore } from "@/types/game";
 
 const WIN_ZONE = 5; // steps to win from center
 
 export default function GameBoard() {
-  const [position, setPosition] = useState(0); // negative = Team1 leading, positive = Team2 leading
-  const [score, setScore] = useState({ team1: 0, team2: 0 });
-  const [questions, setQuestions] = useState<{ team1: MathQuestion; team2: MathQuestion }>({
+  const [position, setPosition] = useState(0);
+  const [score, setScore] = useState<GameScore>({ team1: 0, team2: 0 });
+  const [questions, setQuestions] = useState<TeamQuestions>({
     team1: generateQuestion(),
     team2: generateQuestion(),
   });
-  const [winner, setWinner] = useState<1 | 2 | null>(null);
+  const [winner, setWinner] = useState<TeamId | null>(null);
   const [showWinBanner, setShowWinBanner] = useState(false);
 
   // Check win condition whenever position changes

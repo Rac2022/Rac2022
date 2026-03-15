@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { MathQuestion } from "@/utils/generateQuestion";
-
-interface TeamPanelProps {
-  team: 1 | 2;
-  question: MathQuestion;
-  onCorrectAnswer: () => void;
-  disabled: boolean;
-  score: number;
-}
+import type { TeamPanelProps } from "@/types/game";
 
 const TEAM_COLORS = {
   1: {

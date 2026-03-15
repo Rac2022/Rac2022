@@ -1,9 +1,4 @@
-export interface MathQuestion {
-  a: number;
-  b: number;
-  answer: number;
-  display: string;
-}
+import type { MathQuestion } from "@/types/game";
 
 export function generateQuestion(difficulty: number = 1): MathQuestion {
   let a: number;

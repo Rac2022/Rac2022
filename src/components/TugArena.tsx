@@ -1,13 +1,9 @@
 "use client";
 
+import type { TugArenaProps } from "@/types/game";
+
 const TOTAL_STEPS = 10;
 const HALF = TOTAL_STEPS / 2;
-
-interface TugArenaProps {
-  /** Negative = Team 1 leading, Positive = Team 2 leading. Range: -HALF to +HALF */
-  position: number;
-  winZone: number;
-}
 
 export default function TugArena({ position, winZone }: TugArenaProps) {
   // Convert position to a percentage (0% = full Team1 win, 50% = center, 100% = full Team2 win)
