@@ -7,6 +7,15 @@ export type Difficulty = 'easy' | 'medium' | 'hard' | 'mixed';
 /** Supported math operators */
 export type Operator = '+' | '-' | '×' | '÷';
 
+/** Controls which operators appear in generated questions */
+export type OperatorMode = Operator | 'mixed';
+
+/** Configuration object for question generation */
+export interface QuestionConfig {
+  difficulty?: Difficulty;
+  operatorMode?: OperatorMode;
+}
+
 /** A generated math problem with its computed answer */
 export interface MathQuestion {
   a: number;

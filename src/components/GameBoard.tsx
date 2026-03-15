@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import TeamPanel from "./TeamPanel";
 import TugArena from "./TugArena";
 import { generateQuestion } from "@/utils/generateQuestion";
-import type { TeamId, TeamQuestions, GameScore, Difficulty } from "@/types/game";
+import type { TeamId, TeamQuestions, GameScore, Difficulty, OperatorMode, QuestionConfig } from "@/types/game";
 
 const WIN_ZONE = 5; // steps to win from center
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
@@ -13,14 +13,24 @@ const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
   { value: 'hard',   label: 'Hard' },
   { value: 'mixed',  label: 'Mixed' },
 ];
+const OPERATOR_OPTIONS: { value: OperatorMode; label: string }[] = [
+  { value: 'mixed', label: 'All' },
+  { value: '+',     label: '+' },
+  { value: '-',     label: '−' },
+  { value: '×',     label: '×' },
+  { value: '÷',     label: '÷' },
+];
 
 export default function GameBoard() {
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [operatorMode, setOperatorMode] = useState<OperatorMode>('mixed');
   const [position, setPosition] = useState(0);
   const [score, setScore] = useState<GameScore>({ team1: 0, team2: 0 });
+
+  const config: QuestionConfig = { difficulty, operatorMode };
   const [questions, setQuestions] = useState<TeamQuestions>({
-    team1: generateQuestion('easy'),
-    team2: generateQuestion('easy'),
+    team1: generateQuestion(config),
+    team2: generateQuestion(config),
   });
   const [winner, setWinner] = useState<TeamId | null>(null);
   const [showWinBanner, setShowWinBanner] = useState(false);
@@ -40,20 +50,23 @@ export default function GameBoard() {
 
   const handleTeam1Correct = useCallback(() => {
     setPosition((prev) => prev - 1);
-    setQuestions((prev) => ({ ...prev, team1: generateQuestion(difficulty) }));
-  }, [difficulty]);
+    setQuestions((prev) => ({ ...prev, team1: generateQuestion({ difficulty, operatorMode }) }));
+  }, [difficulty, operatorMode]);
 
   const handleTeam2Correct = useCallback(() => {
     setPosition((prev) => prev + 1);
-    setQuestions((prev) => ({ ...prev, team2: generateQuestion(difficulty) }));
-  }, [difficulty]);
+    setQuestions((prev) => ({ ...prev, team2: generateQuestion({ difficulty, operatorMode }) }));
+  }, [difficulty, operatorMode]);
 
   const resetRound = useCallback(() => {
     setPosition(0);
     setWinner(null);
     setShowWinBanner(false);
-    setQuestions({ team1: generateQuestion(difficulty), team2: generateQuestion(difficulty) });
-  }, [difficulty]);
+    setQuestions({
+      team1: generateQuestion({ difficulty, operatorMode }),
+      team2: generateQuestion({ difficulty, operatorMode }),
+    });
+  }, [difficulty, operatorMode]);
 
   const resetAll = useCallback(() => {
     resetRound();
@@ -104,6 +117,27 @@ export default function GameBoard() {
               className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors
                 active:scale-95 ${
                   difficulty === opt.value
+                    ? "bg-amber-500 text-gray-900"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-6 bg-gray-600 hidden sm:block" />
+
+        {/* Operator selector */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-gray-400 text-xs sm:text-sm font-medium mr-1">Operator:</span>
+          {OPERATOR_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setOperatorMode(opt.value)}
+              className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-colors
+                active:scale-95 ${
+                  operatorMode === opt.value
                     ? "bg-amber-500 text-gray-900"
                     : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 }`}

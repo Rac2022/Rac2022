@@ -1,4 +1,4 @@
-import type { MathQuestion, Difficulty, Operator } from "@/types/game";
+import type { MathQuestion, Difficulty, Operator, QuestionConfig } from "@/types/game";
 
 const ALL_OPERATORS: Operator[] = ['+', '-', '×', '÷'];
 
@@ -41,13 +41,12 @@ function buildQuestion(a: number, b: number, operator: Operator): MathQuestion {
   };
 }
 
-export function generateQuestion(
-  difficulty: Difficulty = 'easy',
-  operator?: Operator,
-): MathQuestion {
+export function generateQuestion(config: QuestionConfig = {}): MathQuestion {
+  const { difficulty = 'easy', operatorMode = 'mixed' } = config;
+
   const resolved = resolveDifficulty(difficulty);
   const { min, max } = RANGES[resolved];
-  const op = operator ?? pickOperator();
+  const op = operatorMode === 'mixed' ? pickOperator() : operatorMode;
 
   switch (op) {
     case '+': {
