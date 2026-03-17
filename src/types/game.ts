@@ -237,6 +237,62 @@ export interface DailyChallengeState {
   completed: boolean;
 }
 
+// ── Multiplayer types ───────────────────────────────────────────────
+
+/** A player connected to a multiplayer room */
+export interface RoomPlayer {
+  id: string;
+  name: string;
+  team: TeamId;
+  connected: boolean;
+}
+
+/** Shared room state broadcast by the host */
+export interface RoomState {
+  roomCode: string;
+  phase: 'waiting' | 'playing' | 'finished';
+  players: RoomPlayer[];
+  settings: GameSettings;
+  position: number;
+  score: GameScore;
+  streaks: Streaks;
+  roundResult: RoundResult;
+  timeLeft: number | null;
+  winZone: number;
+  themeId: ThemeId;
+  presetId: PresetId;
+  gameMode: GameMode;
+}
+
+/** Question sent to a specific player */
+export interface PlayerQuestion {
+  playerId: string;
+  question: MathQuestion;
+}
+
+/** Answer submitted by a player */
+export interface PlayerAnswer {
+  playerId: string;
+  playerName: string;
+  team: TeamId;
+  answer: number;
+  questionDisplay: string;
+}
+
+/** Events sent from host to players */
+export type HostEvent =
+  | { type: 'room-state'; state: RoomState }
+  | { type: 'question'; data: PlayerQuestion }
+  | { type: 'answer-result'; playerId: string; correct: boolean }
+  | { type: 'game-start' }
+  | { type: 'game-end'; result: RoundResult };
+
+/** Events sent from player to host */
+export type PlayerEvent =
+  | { type: 'join'; player: RoomPlayer }
+  | { type: 'answer'; data: PlayerAnswer }
+  | { type: 'leave'; playerId: string };
+
 // ── Component props ─────────────────────────────────────────────────
 
 export interface TeamPanelProps {

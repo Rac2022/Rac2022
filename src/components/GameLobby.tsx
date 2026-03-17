@@ -211,6 +211,31 @@ export default function GameLobby({
             Practice
           </button>
         </div>
+
+        {/* Multiplayer buttons */}
+        <div className="w-full border-t border-gray-700/50 pt-3 mt-1">
+          <p className="text-gray-500 text-xs font-bold text-center uppercase tracking-wide mb-2">
+            Online Multiplayer
+          </p>
+          <div className="flex gap-3 w-full">
+            <a
+              href="/host"
+              className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold text-base
+                px-4 py-3 rounded-xl active:scale-95 transition-transform text-center
+                shadow-lg shadow-green-600/20"
+            >
+              Host Match
+            </a>
+            <a
+              href="/join"
+              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-base
+                px-4 py-3 rounded-xl active:scale-95 transition-transform text-center
+                shadow-lg shadow-cyan-600/20"
+            >
+              Join Game
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Footer actions */}
