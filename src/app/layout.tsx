@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Classroom Clash: Tug of War Math",
-  description:
-    "A fun, competitive math game for classrooms. Two teams race to solve problems and pull the rope!",
+  title: "Plug Trust Pass",
+  description: "Verified device certification for refurbished phone resellers",
 };
 
 export default function RootLayout({
@@ -14,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="overflow-hidden">{children}</body>
+      <body className="bg-plug-gray min-h-screen text-slate-900 antialiased">
+        {children}
+      </body>
     </html>
   );
 }
