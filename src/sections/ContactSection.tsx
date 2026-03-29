@@ -30,7 +30,7 @@ export default function ContactSection() {
         />
 
         <p className="max-w-xl mx-auto font-body font-light text-white/50 text-sm md:text-base leading-relaxed mb-10">
-          If you want to talk about growth, AI workflows, strategy, systems, or an idea worth building — let's connect.
+          If you want to talk about growth, AI workflows, strategy, systems, or an idea worth building, let's connect.
         </p>
 
         {/* CTA buttons */}

@@ -17,7 +17,7 @@ export default function PersonalSection() {
           Behind the systems and strategy is a person grounded by family, fueled by curiosity, and driven by the belief that meaningful work and meaningful life aren't separate things.
         </p>
         <p className="max-w-2xl mx-auto font-body font-light text-white/40 text-sm leading-relaxed mb-14">
-          Rodolfo finds energy in learning — about science, technology, nature, and the deeper questions that don't have quick answers. He's building a better future for the people he loves, one system, one idea, and one conversation at a time.
+          I find energy in learning about science, technology, nature, and the deeper questions that don't have quick answers. I'm building a better future for the people I love, one system, one idea, and one conversation at a time.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">

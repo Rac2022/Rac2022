@@ -43,11 +43,11 @@ export default function PhilosophySection() {
             className="text-4xl md:text-5xl font-heading italic text-white leading-[0.85] tracking-[-2px] mb-8"
           />
           <p className="font-body font-light text-white/50 text-sm md:text-base leading-relaxed">
-            The best systems are built by people who ask better questions. Strategy without curiosity is just process. Execution without vision is just motion. Rodolfo believes in staying close to the frontier — not because it's trendy, but because it's where leverage lives.
+            The best systems are built by people who ask better questions. Strategy without curiosity is just process. Execution without vision is just motion. I believe in staying close to the frontier, not because it's trendy, but because it's where leverage lives.
           </p>
         </div>
 
-        {/* Right — belief cards */}
+        {/* Right: belief cards */}
         <div className="space-y-3">
           {beliefs.map((belief, i) => (
             <BeliefCard key={i} text={belief} index={i} />

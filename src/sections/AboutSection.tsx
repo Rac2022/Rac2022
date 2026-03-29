@@ -24,7 +24,7 @@ export default function AboutSection() {
             className="text-4xl md:text-5xl lg:text-6xl font-heading italic text-white leading-[0.85] tracking-[-2px] mb-8"
           />
           <p className="font-body font-light text-white/50 text-sm md:text-base leading-relaxed mb-4">
-            I do more than sell — I connect ideas, people, systems, and opportunities. I work at the overlap of execution and imagination, helping teams move faster, communicate better, and make smarter decisions.
+            I do more than sell. I connect ideas, people, systems, and opportunities. I work at the overlap of execution and imagination, helping teams move faster, communicate better, and make smarter decisions.
           </p>
           <p className="font-body font-light text-white/40 text-sm leading-relaxed">
             Whether it's structuring a territory plan, building an AI workflow, or thinking about what the future of work actually looks like, I bring the same energy: clarity, curiosity, and a builder's bias toward action.

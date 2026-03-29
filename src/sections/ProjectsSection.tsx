@@ -17,7 +17,7 @@ const projects = [
   },
   {
     title: 'Personal Brand & Creative Identity',
-    desc: 'This site and the broader system behind it — building a digital presence that reflects real thinking.',
+    desc: 'This site and the broader system behind it. Building a digital presence that reflects real thinking.',
     tags: ['Web', 'Brand', 'Design'],
     status: 'Live Concept',
   },
@@ -29,7 +29,7 @@ const projects = [
   },
   {
     title: 'Future-Facing Digital Experiments',
-    desc: 'Explorations at the edge — AI agents, creative tools, and products designed for what comes next.',
+    desc: 'Explorations at the edge. AI agents, creative tools, and products designed for what comes next.',
     tags: ['Experiments', 'AI', 'Products'],
     status: 'Exploring',
   },

@@ -25,7 +25,7 @@ export default function IntroSection() {
           Strategic in business. Creative in execution. Obsessive about systems. Curious about what comes next.
         </p>
         <p className="max-w-2xl mx-auto font-body font-light text-white/40 text-sm leading-relaxed mb-16">
-          I work at the intersection of business development, territory strategy, compliance-driven sales systems, and AI-assisted workflows — while side projects and deep curiosity about science and technology keep the engine running.
+          I work at the intersection of business development, territory strategy, compliance-driven sales systems, and AI-assisted workflows. Side projects and deep curiosity about science and technology keep the engine running.
         </p>
 
         {/* Stat strip */}
