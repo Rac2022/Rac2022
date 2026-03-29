@@ -4,7 +4,7 @@ import GlassCard from '@/components/GlassCard'
 
 const contactMethods = [
   { icon: Mail, label: 'Email', value: 'hello@rodolfoavalos.com', href: 'mailto:hello@rodolfoavalos.com' },
-  { icon: Linkedin, label: 'LinkedIn', value: 'linkedin.com/in/rodolfoavalos', href: 'https://linkedin.com/in/rodolfoavalos' },
+  { icon: Linkedin, label: 'LinkedIn', value: 'linkedin.com/in/rodolfo-avalos', href: 'https://www.linkedin.com/in/rodolfo-avalos-69683168/' },
   { icon: Github, label: 'GitHub', value: 'github.com/rodolfoavalos', href: 'https://github.com/rodolfoavalos' },
   { icon: Calendar, label: 'Schedule', value: 'Book a conversation', href: '#' },
 ]

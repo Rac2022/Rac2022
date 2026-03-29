@@ -10,7 +10,7 @@ export default function Footer() {
             Privacy
           </a>
           <a
-            href="https://linkedin.com/in/rodolfoavalos"
+            href="https://www.linkedin.com/in/rodolfo-avalos-69683168/"
             target="_blank"
             rel="noopener noreferrer"
             className="font-body font-light text-white/30 text-xs hover:text-white/60 transition-colors"
