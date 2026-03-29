@@ -3,16 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/i18n'
 
-const navLinks = [
-  { label: 'Home', to: '/' },
-  { label: 'About', to: '/#about' },
-  { label: 'Writing', to: '/writing' },
-  { label: 'Manifesto', to: '/#philosophy' },
-  { label: 'Contact', to: '/#contact' },
-]
-
-function NavLink({ label, to, onClick }: { label: string; to: string; onClick?: () => void; className?: string }) {
+function NavLink({ label, to, onClick }: { label: string; to: string; onClick?: () => void }) {
   const location = useLocation()
 
   if (to.includes('#')) {
@@ -42,9 +35,34 @@ function NavLink({ label, to, onClick }: { label: string; to: string; onClick?: 
   )
 }
 
+function LangToggle() {
+  const { lang, setLang } = useLanguage()
+
+  return (
+    <button
+      onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
+      className="liquid-glass rounded-full px-2.5 py-1 text-xs font-body font-medium text-white/60 hover:text-white transition-colors"
+      aria-label="Toggle language"
+    >
+      <span className={cn(lang === 'en' && 'text-white')}>EN</span>
+      <span className="text-white/30 mx-1">/</span>
+      <span className={cn(lang === 'es' && 'text-white')}>ES</span>
+    </button>
+  )
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { t, lang, setLang } = useLanguage()
+
+  const navLinks = [
+    { label: t.nav.home, to: '/' },
+    { label: t.nav.about, to: '/#about' },
+    { label: t.nav.writing, to: '/writing' },
+    { label: t.nav.manifesto, to: '/#philosophy' },
+    { label: t.nav.contact, to: '/#contact' },
+  ]
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50)
@@ -61,12 +79,10 @@ export default function Navbar() {
         className="fixed top-4 left-0 right-0 z-50 px-4"
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          {/* Monogram */}
           <Link to="/" className="font-heading italic text-2xl text-white tracking-tight z-10">
             RA
           </Link>
 
-          {/* Desktop nav pill */}
           <div
             className={cn(
               'hidden md:flex items-center gap-1 rounded-full px-2 py-1.5 transition-all duration-500',
@@ -83,13 +99,13 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* CTA + Mobile toggle */}
           <div className="flex items-center gap-3 z-10">
+            <LangToggle />
             <Link
               to="/#contact"
               className="hidden md:flex items-center gap-1.5 bg-white text-black font-body font-medium text-sm px-4 py-2 rounded-full hover:bg-white/90 transition-colors"
             >
-              Connect <ArrowUpRight className="w-3.5 h-3.5" />
+              {t.nav.connect} <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -102,7 +118,6 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -120,12 +135,20 @@ export default function Navbar() {
                 <NavLink label={link.label} to={link.to} onClick={() => setMobileOpen(false)} />
               </span>
             ))}
+
+            <button
+              onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
+              className="mt-2 text-lg font-body text-white/50 hover:text-white transition-colors"
+            >
+              {lang === 'en' ? 'Cambiar a Espa\u00f1ol' : 'Switch to English'}
+            </button>
+
             <Link
               to="/#contact"
               onClick={() => setMobileOpen(false)}
               className="mt-4 flex items-center gap-2 bg-white text-black font-body font-medium px-6 py-3 rounded-full"
             >
-              Connect <ArrowUpRight className="w-4 h-4" />
+              {t.nav.connect} <ArrowUpRight className="w-4 h-4" />
             </Link>
           </motion.div>
         )}

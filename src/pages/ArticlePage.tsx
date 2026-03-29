@@ -2,7 +2,8 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { motion } from 'framer-motion'
 import PostCard from '@/components/PostCard'
-import { getPost, getRelatedPosts } from '@/content/posts'
+import { getPost, getRelatedPosts, localized } from '@/content/posts'
+import { useLanguage } from '@/i18n'
 
 function renderBody(body: string) {
   const blocks: React.ReactNode[] = []
@@ -54,12 +55,14 @@ function renderBody(body: string) {
 
 export default function ArticlePage() {
   const { slug } = useParams<{ slug: string }>()
-  const post = slug ? getPost(slug) : undefined
+  const { t, lang } = useLanguage()
+  const rawPost = slug ? getPost(slug) : undefined
 
-  if (!post) return <Navigate to="/writing" replace />
+  if (!rawPost) return <Navigate to="/writing" replace />
 
-  const related = getRelatedPosts(post.slug, 3)
-  const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
+  const post = localized(rawPost, lang)
+  const related = getRelatedPosts(rawPost.slug, 3)
+  const formattedDate = new Date(post.date).toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -68,7 +71,6 @@ export default function ArticlePage() {
   return (
     <div className="bg-black text-white min-h-screen">
       <article className="max-w-3xl mx-auto px-4 pt-32 pb-20">
-        {/* Back link */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -78,11 +80,10 @@ export default function ArticlePage() {
             to="/writing"
             className="inline-flex items-center gap-2 font-body text-sm text-white/40 hover:text-white transition-colors mb-12"
           >
-            <ArrowLeft className="w-4 h-4" /> All essays
+            <ArrowLeft className="w-4 h-4" /> {t.writing.allEssaysBack}
           </Link>
         </motion.div>
 
-        {/* Article header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -107,7 +108,6 @@ export default function ArticlePage() {
           <div className="w-full h-px bg-white/10 mb-12" />
         </motion.div>
 
-        {/* Article body */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -116,18 +116,16 @@ export default function ArticlePage() {
           {renderBody(post.body)}
         </motion.div>
 
-        {/* Divider */}
         <div className="w-full h-px bg-white/10 my-16" />
 
-        {/* Related posts */}
         {related.length > 0 && (
           <div>
             <h2 className="font-body font-medium text-white/30 text-xs uppercase tracking-widest mb-6">
-              Continue Reading
+              {t.writing.continueReading}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {related.map((p, i) => (
-                <PostCard key={p.slug} post={p} index={i} />
+                <PostCard key={p.slug} post={p} index={i} lang={lang} />
               ))}
             </div>
           </div>

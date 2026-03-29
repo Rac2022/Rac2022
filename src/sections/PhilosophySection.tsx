@@ -2,15 +2,7 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import BlurText from '@/components/BlurText'
 import SectionBadge from '@/components/SectionBadge'
-
-const principles = [
-  'Intelligence without judgment is just noise with better formatting.',
-  'Systems shape behavior more than intentions ever will.',
-  'The future rewards clarity, not volume.',
-  'Build things that make people sharper, not more dependent.',
-  'The best use of AI is not replacing thought. It is freeing time to think.',
-  'Curiosity is not a hobby. It is an operating advantage.',
-]
+import { useLanguage } from '@/i18n'
 
 function PrincipleCard({ text, index }: { text: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -25,32 +17,32 @@ function PrincipleCard({ text, index }: { text: string; index: number }) {
       className="liquid-glass rounded-2xl p-5 hover:bg-white/[0.03] transition-colors duration-500"
     >
       <p className="font-body font-light text-white/70 text-sm md:text-base leading-relaxed italic">
-        "{text}"
+        &ldquo;{text}&rdquo;
       </p>
     </motion.div>
   )
 }
 
 export default function PhilosophySection() {
+  const { t } = useLanguage()
+
   return (
     <section id="philosophy" className="relative py-28 md:py-40 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-        {/* Left */}
         <div>
-          <SectionBadge text="Manifesto" />
+          <SectionBadge text={t.manifesto.badge} />
           <BlurText
-            text="What I believe about AI, systems, and the human future."
+            text={t.manifesto.heading}
             as="h2"
             className="text-4xl md:text-5xl font-heading italic text-white leading-[0.85] tracking-[-2px] mb-8"
           />
           <p className="font-body font-light text-white/50 text-sm md:text-base leading-relaxed">
-            Technology is accelerating faster than our ability to think clearly about it. The people who will matter most are not the ones who adopt every tool first. They are the ones who know which tools to ignore, which questions to ask, and when to slow down and think.
+            {t.manifesto.body}
           </p>
         </div>
 
-        {/* Right: principle cards */}
         <div className="space-y-3">
-          {principles.map((principle, i) => (
+          {t.manifesto.principles.map((principle, i) => (
             <PrincipleCard key={i} text={principle} index={i} />
           ))}
         </div>
