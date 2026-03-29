@@ -41,12 +41,12 @@ function LangToggle() {
   return (
     <button
       onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
-      className="liquid-glass rounded-full px-2.5 py-1 text-xs font-body font-medium text-white/60 hover:text-white transition-colors"
+      className="liquid-glass rounded-full px-3 py-1.5 text-[11px] font-body font-medium hover:bg-white/[0.04] transition-all duration-300"
       aria-label="Toggle language"
     >
-      <span className={cn(lang === 'en' && 'text-white')}>EN</span>
-      <span className="text-white/30 mx-1">/</span>
-      <span className={cn(lang === 'es' && 'text-white')}>ES</span>
+      <span className={cn('transition-all duration-300', lang === 'en' ? 'text-white' : 'text-white/35')}>EN</span>
+      <span className="text-white/20 mx-1.5">&middot;</span>
+      <span className={cn('transition-all duration-300', lang === 'es' ? 'text-white' : 'text-white/35')}>ES</span>
     </button>
   )
 }
