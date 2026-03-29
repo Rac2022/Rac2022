@@ -24,21 +24,17 @@ export default function AboutSection() {
             className="text-4xl md:text-5xl lg:text-6xl font-heading italic text-white leading-[0.85] tracking-[-2px] mb-8"
           />
           <p className="font-body font-light text-white/50 text-sm md:text-base leading-relaxed mb-4">
-            Rodolfo is a professional who does more than sell. He connects ideas, people, systems, and opportunities. He works at the overlap of execution and imagination — helping teams move faster, communicate better, and make smarter decisions.
+            I do more than sell — I connect ideas, people, systems, and opportunities. I work at the overlap of execution and imagination, helping teams move faster, communicate better, and make smarter decisions.
           </p>
           <p className="font-body font-light text-white/40 text-sm leading-relaxed">
-            Whether it's structuring a territory plan, building an AI workflow, or thinking about what the future of work actually looks like, Rodolfo brings the same energy: clarity, curiosity, and a builder's bias toward action.
+            Whether it's structuring a territory plan, building an AI workflow, or thinking about what the future of work actually looks like, I bring the same energy: clarity, curiosity, and a builder's bias toward action.
           </p>
         </div>
 
         {/* Right */}
         <div className="space-y-4">
-          {/* Portrait placeholder */}
-          <GlassCard variant="strong" className="aspect-[4/3] flex items-center justify-center mb-4">
-            <div className="w-full h-full rounded-xl bg-gradient-to-br from-white/5 to-white/[0.01] flex items-center justify-center">
-              <span className="font-heading italic text-6xl text-white/10">RA</span>
-              {/* Replace with: <img src="/images/rodolfo-portrait.jpg" alt="Rodolfo Avalos" className="w-full h-full object-cover rounded-xl" /> */}
-            </div>
+          <GlassCard variant="strong" className="aspect-[4/3] flex items-center justify-center mb-4 overflow-hidden">
+            <img src={`${import.meta.env.BASE_URL}me.JPG`} alt="Rodolfo Avalos" className="w-full h-full object-cover rounded-xl" />
           </GlassCard>
 
           {/* Identity bullets */}
