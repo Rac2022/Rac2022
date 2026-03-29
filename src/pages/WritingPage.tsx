@@ -38,7 +38,7 @@ export default function WritingPage() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="font-body font-light text-white/40 text-base md:text-lg leading-relaxed mb-16 max-w-2xl"
         >
-          Long-form thinking on artificial intelligence, systems design, strategy, and the human decisions that technology cannot replace.
+          On AI, systems, human judgment, and the decisions that shape what gets built next.
         </motion.p>
 
         {/* Featured */}

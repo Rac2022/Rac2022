@@ -14,12 +14,12 @@ export default function WritingSection() {
         <div className="text-center mb-16">
           <SectionBadge text="Writing" />
           <BlurText
-            text="Essays on intelligence, systems, and the future."
+            text="Thinking in public."
             as="h2"
             className="text-4xl md:text-5xl lg:text-6xl font-heading italic text-white leading-[0.85] tracking-[-2px] justify-center mb-6"
           />
           <p className="max-w-2xl mx-auto font-body font-light text-white/40 text-sm leading-relaxed">
-            Long-form thinking about AI, strategy, human judgment, and the decisions that shape what comes next.
+            Essays on AI, systems, judgment, and what happens when powerful tools meet human complexity.
           </p>
         </div>
 
