@@ -34,7 +34,15 @@ export default function AboutSection() {
         {/* Right */}
         <div className="space-y-4">
           <GlassCard variant="strong" className="aspect-[4/3] flex items-center justify-center mb-4 overflow-hidden">
-            <img src={`${import.meta.env.BASE_URL}me.JPG`} alt="Rodolfo Avalos" className="w-full h-full object-cover rounded-xl" />
+            <img
+              src={`${import.meta.env.BASE_URL}me.JPG`}
+              alt="Rodolfo Avalos"
+              loading="lazy"
+              decoding="async"
+              width={600}
+              height={450}
+              className="w-full h-full object-cover rounded-xl"
+            />
           </GlassCard>
 
           {/* Identity bullets */}

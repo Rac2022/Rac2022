@@ -1,14 +1,17 @@
+import { lazy, Suspense } from 'react'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/sections/HeroSection'
-import IntroSection from '@/sections/IntroSection'
-import AboutSection from '@/sections/AboutSection'
-import WhatIDoSection from '@/sections/WhatIDoSection'
-import FocusAreasSection from '@/sections/FocusAreasSection'
-import ProjectsSection from '@/sections/ProjectsSection'
-import PhilosophySection from '@/sections/PhilosophySection'
-import PersonalSection from '@/sections/PersonalSection'
-import ContactSection from '@/sections/ContactSection'
-import Footer from '@/sections/Footer'
+
+// Lazy load below-the-fold sections
+const IntroSection = lazy(() => import('@/sections/IntroSection'))
+const AboutSection = lazy(() => import('@/sections/AboutSection'))
+const WhatIDoSection = lazy(() => import('@/sections/WhatIDoSection'))
+const FocusAreasSection = lazy(() => import('@/sections/FocusAreasSection'))
+const ProjectsSection = lazy(() => import('@/sections/ProjectsSection'))
+const PhilosophySection = lazy(() => import('@/sections/PhilosophySection'))
+const PersonalSection = lazy(() => import('@/sections/PersonalSection'))
+const ContactSection = lazy(() => import('@/sections/ContactSection'))
+const Footer = lazy(() => import('@/sections/Footer'))
 
 export default function App() {
   return (
@@ -16,16 +19,20 @@ export default function App() {
       <Navbar />
       <main>
         <HeroSection />
-        <IntroSection />
-        <AboutSection />
-        <WhatIDoSection />
-        <FocusAreasSection />
-        <ProjectsSection />
-        <PhilosophySection />
-        <PersonalSection />
-        <ContactSection />
+        <Suspense>
+          <IntroSection />
+          <AboutSection />
+          <WhatIDoSection />
+          <FocusAreasSection />
+          <ProjectsSection />
+          <PhilosophySection />
+          <PersonalSection />
+          <ContactSection />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense>
+        <Footer />
+      </Suspense>
     </div>
   )
 }
