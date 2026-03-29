@@ -14,10 +14,10 @@ export default function PersonalSection() {
         />
 
         <p className="max-w-2xl mx-auto font-body font-light text-white/50 text-sm md:text-base leading-relaxed mb-6">
-          Behind the systems and strategy is a person grounded by family, fueled by curiosity, and driven by the belief that meaningful work and meaningful life aren't separate things.
+          The systems and strategies exist to serve something real: family, growth, and the belief that meaningful work and meaningful life are the same project.
         </p>
         <p className="max-w-2xl mx-auto font-body font-light text-white/40 text-sm leading-relaxed mb-14">
-          I find energy in learning about science, technology, nature, and the deeper questions that don't have quick answers. I'm building a better future for the people I love, one system, one idea, and one conversation at a time.
+          I find energy in learning about science, technology, nature, and the deeper questions that do not have quick answers. I am building a better future for the people I love, one system, one idea, and one conversation at a time.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
@@ -27,7 +27,7 @@ export default function PersonalSection() {
           </GlassCard>
           <GlassCard delay={0.1} className="text-center">
             <h4 className="font-heading italic text-lg text-white mb-1">Always Learning</h4>
-            <p className="font-body font-light text-white/40 text-xs">Science, technology, ideas, and the unknown.</p>
+            <p className="font-body font-light text-white/40 text-xs">Science, philosophy, and the unknown.</p>
           </GlassCard>
           <GlassCard delay={0.2} className="text-center">
             <h4 className="font-heading italic text-lg text-white mb-1">Future Builder</h4>

@@ -24,13 +24,13 @@ export default function ContactSection() {
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <BlurText
-          text="Let's build something meaningful."
+          text="Let's think together."
           as="h2"
           className="text-4xl md:text-5xl lg:text-6xl font-heading italic text-white leading-[0.85] tracking-[-2px] justify-center mb-6"
         />
 
         <p className="max-w-xl mx-auto font-body font-light text-white/50 text-sm md:text-base leading-relaxed mb-10">
-          If you want to talk about growth, AI workflows, strategy, systems, or an idea worth building, let's connect.
+          If you are building something at the intersection of AI, strategy, and human judgment, I would like to hear about it.
         </p>
 
         {/* CTA buttons */}
@@ -42,10 +42,9 @@ export default function ContactSection() {
             Connect With Me <ArrowUpRight className="w-4 h-4" />
           </a>
           <a
-            href="#"
+            href="mailto:rodolfoavalos635@gmail.com"
             className="flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-body font-medium text-sm hover:bg-white/90 transition-colors"
           >
-            {/* Replace href with resume link or mailto */}
             Email Me
           </a>
         </div>

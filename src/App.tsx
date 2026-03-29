@@ -1,33 +1,31 @@
 import { lazy, Suspense } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Navbar from '@/components/Navbar'
-import HeroSection from '@/sections/HeroSection'
 
-// Lazy load below-the-fold sections
-const IntroSection = lazy(() => import('@/sections/IntroSection'))
-const AboutSection = lazy(() => import('@/sections/AboutSection'))
-const WhatIDoSection = lazy(() => import('@/sections/WhatIDoSection'))
-const FocusAreasSection = lazy(() => import('@/sections/FocusAreasSection'))
-const ProjectsSection = lazy(() => import('@/sections/ProjectsSection'))
-const PhilosophySection = lazy(() => import('@/sections/PhilosophySection'))
-const PersonalSection = lazy(() => import('@/sections/PersonalSection'))
-const ContactSection = lazy(() => import('@/sections/ContactSection'))
+const HomePage = lazy(() => import('@/pages/HomePage'))
+const WritingPage = lazy(() => import('@/pages/WritingPage'))
+const ArticlePage = lazy(() => import('@/pages/ArticlePage'))
 const Footer = lazy(() => import('@/sections/Footer'))
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
 
 export default function App() {
   return (
     <div className="bg-black text-white overflow-visible min-h-screen">
+      <ScrollToTop />
       <Navbar />
       <main>
-        <HeroSection />
         <Suspense>
-          <IntroSection />
-          <AboutSection />
-          <WhatIDoSection />
-          <FocusAreasSection />
-          <ProjectsSection />
-          <PhilosophySection />
-          <PersonalSection />
-          <ContactSection />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/writing" element={<WritingPage />} />
+            <Route path="/writing/:slug" element={<ArticlePage />} />
+          </Routes>
         </Suspense>
       </main>
       <Suspense>

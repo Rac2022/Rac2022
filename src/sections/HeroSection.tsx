@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react'
 import BlurText from '@/components/BlurText'
 import AnimatedBackground from '@/components/AnimatedBackground'
 
-const credibilityItems = ['Business Development', 'AI Workflows', 'Personal Systems', 'Creative Technology']
+const credibilityItems = ['AI Systems', 'Strategy', 'Long-Term Thinking', 'Human Judgment']
 
 export default function HeroSection() {
   return (
@@ -19,13 +19,13 @@ export default function HeroSection() {
           className="inline-block mb-10"
         >
           <span className="liquid-glass rounded-full px-4 py-1.5 text-xs font-body font-medium text-white/70">
-            Business Development • AI Systems • Strategy • Builder
+            Thinking about AI, systems, and what comes next
           </span>
         </motion.div>
 
         {/* Hero heading */}
         <BlurText
-          text="Building smarter systems for work, growth, and the future."
+          text="Intelligence is easy. Judgment is rare."
           as="h1"
           className="text-5xl md:text-7xl lg:text-[5.5rem] font-heading italic text-white leading-[0.85] tracking-[-3px] md:tracking-[-4px] justify-center mb-8"
           delay={0.6}
@@ -38,7 +38,7 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 1.4 }}
           className="max-w-2xl mx-auto font-body font-light text-white/50 text-base md:text-lg leading-relaxed mb-10"
         >
-          Rodolfo Avalos blends business development, AI-enabled workflows, strategic thinking, and creative execution to build modern systems that perform.
+          I write about artificial intelligence, strategy, and the systems that shape how we think, build, and decide. The future belongs to people who can pair new tools with old wisdom.
         </motion.p>
 
         {/* CTA row */}
@@ -49,16 +49,16 @@ export default function HeroSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
         >
           <a
-            href="#work"
+            href="#writing"
             className="liquid-glass-strong flex items-center gap-2 px-6 py-3 rounded-full font-body font-medium text-sm text-white hover:bg-white/10 transition-colors"
           >
-            See My Work <ArrowUpRight className="w-4 h-4" />
+            Read My Writing <ArrowUpRight className="w-4 h-4" />
           </a>
           <a
             href="#about"
             className="font-body font-light text-sm text-white/50 hover:text-white transition-colors"
           >
-            About Rodolfo
+            About Me
           </a>
         </motion.div>
 

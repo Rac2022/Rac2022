@@ -3,15 +3,16 @@ import { useRef } from 'react'
 import BlurText from '@/components/BlurText'
 import SectionBadge from '@/components/SectionBadge'
 
-const beliefs = [
-  'Systems matter because attention is limited.',
-  'Technology should amplify human capability, not flatten it.',
-  'The future belongs to people who can learn, adapt, and build.',
-  'Good strategy is clarity under complexity.',
-  'Curiosity is not a distraction. It is leverage.',
+const principles = [
+  'Intelligence without judgment is just noise with better formatting.',
+  'Systems shape behavior more than intentions ever will.',
+  'The future rewards clarity, not volume.',
+  'Build things that make people sharper, not more dependent.',
+  'The best use of AI is not replacing thought. It is freeing time to think.',
+  'Curiosity is not a hobby. It is an operating advantage.',
 ]
 
-function BeliefCard({ text, index }: { text: string; index: number }) {
+function PrincipleCard({ text, index }: { text: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-40px' })
 
@@ -36,21 +37,21 @@ export default function PhilosophySection() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
         {/* Left */}
         <div>
-          <SectionBadge text="Philosophy" />
+          <SectionBadge text="Manifesto" />
           <BlurText
-            text="Curiosity is part of the operating system."
+            text="What I believe about AI, systems, and the human future."
             as="h2"
             className="text-4xl md:text-5xl font-heading italic text-white leading-[0.85] tracking-[-2px] mb-8"
           />
           <p className="font-body font-light text-white/50 text-sm md:text-base leading-relaxed">
-            The best systems are built by people who ask better questions. Strategy without curiosity is just process. Execution without vision is just motion. I believe in staying close to the frontier, not because it's trendy, but because it's where leverage lives.
+            Technology is accelerating faster than our ability to think clearly about it. The people who will matter most are not the ones who adopt every tool first. They are the ones who know which tools to ignore, which questions to ask, and when to slow down and think.
           </p>
         </div>
 
-        {/* Right: belief cards */}
+        {/* Right: principle cards */}
         <div className="space-y-3">
-          {beliefs.map((belief, i) => (
-            <BeliefCard key={i} text={belief} index={i} />
+          {principles.map((principle, i) => (
+            <PrincipleCard key={i} text={principle} index={i} />
           ))}
         </div>
       </div>

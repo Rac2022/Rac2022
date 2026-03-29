@@ -2,11 +2,11 @@ import BlurText from '@/components/BlurText'
 import SectionBadge from '@/components/SectionBadge'
 import GlassCard from '@/components/GlassCard'
 
-const stats = [
-  { title: 'Sales + Growth', desc: 'B2B strategy and relationship building' },
-  { title: 'AI + Automation', desc: 'Turning ideas into working systems' },
-  { title: 'Builder Mindset', desc: 'From prompts and workflows to deployed tools' },
-  { title: 'Big Curiosity', desc: 'Science, technology, philosophy, and future thinking' },
+const pillars = [
+  { title: 'AI Systems', desc: 'Building workflows where machines handle process and humans handle judgment' },
+  { title: 'Strategy', desc: 'Turning complexity into clarity through systems thinking' },
+  { title: 'Writing', desc: 'Essays on intelligence, decision-making, and the path ahead' },
+  { title: 'Long-Term Thinking', desc: 'Asking the questions that matter in five years, not five minutes' },
 ]
 
 export default function IntroSection() {
@@ -16,24 +16,24 @@ export default function IntroSection() {
         <SectionBadge text="Who I Am" />
 
         <BlurText
-          text="Operator. Builder. Curious mind."
+          text="Builder. Strategist. Student of what comes next."
           as="h2"
           className="text-4xl md:text-6xl font-heading italic text-white leading-[0.85] tracking-[-2px] justify-center mb-8"
         />
 
         <p className="max-w-2xl mx-auto font-body font-light text-white/50 text-sm md:text-base leading-relaxed mb-6">
-          Strategic in business. Creative in execution. Obsessive about systems. Curious about what comes next.
+          I sit at the intersection of business development, AI systems, and long-range strategy. Most people chase tools. I think about the thinking behind the tools.
         </p>
         <p className="max-w-2xl mx-auto font-body font-light text-white/40 text-sm leading-relaxed mb-16">
-          I work at the intersection of business development, territory strategy, compliance-driven sales systems, and AI-assisted workflows. Side projects and deep curiosity about science and technology keep the engine running.
+          This site is where I share that thinking: essays on intelligence, systems design, and the human decisions that technology cannot replace.
         </p>
 
-        {/* Stat strip */}
+        {/* Pillar strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, i) => (
+          {pillars.map((pillar, i) => (
             <GlassCard key={i} delay={i * 0.1} className="text-left">
-              <h4 className="font-body font-medium text-white text-sm mb-1">{stat.title}</h4>
-              <p className="font-body font-light text-white/40 text-xs leading-relaxed">{stat.desc}</p>
+              <h4 className="font-body font-medium text-white text-sm mb-1">{pillar.title}</h4>
+              <p className="font-body font-light text-white/40 text-xs leading-relaxed">{pillar.desc}</p>
             </GlassCard>
           ))}
         </div>
