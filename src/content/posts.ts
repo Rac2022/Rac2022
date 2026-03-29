@@ -412,6 +412,391 @@ We are at a unique moment. The tools are powerful enough to do almost anything f
 
 That choice is still ours. How deliberately we make it determines whether it stays that way.`,
   },
+  {
+    slug: 'intelligence-scaling-faster-than-wisdom',
+    title: 'Intelligence Is Scaling Faster Than Wisdom',
+    title_es: 'La inteligencia est\u00e1 creciendo m\u00e1s r\u00e1pido que la sabidur\u00eda',
+    description: 'AI capability is accelerating at a historic pace, but wisdom does not scale with compute. The real danger may be the widening gap between what we can do and what we should do.',
+    description_es: 'La capacidad de la IA se acelera a un ritmo hist\u00f3rico, pero la sabidur\u00eda no escala con m\u00e1s c\u00f3mputo. El verdadero peligro puede estar en la brecha creciente entre lo que podemos hacer y lo que deber\u00edamos hacer.',
+    date: '2026-03-29',
+    readingTime: '6 min read',
+    readingTime_es: '6 min de lectura',
+    category: 'Intelligence & Wisdom',
+    category_es: 'Inteligencia y sabidur\u00eda',
+    featured: true,
+    body: `We are living through a strange imbalance.
+
+For most of human history, intelligence and wisdom grew together. Slowly, painfully, through trial and error. Every new tool came with friction. Every advancement carried consequences that forced reflection.
+
+That coupling is now breaking.
+
+Artificial intelligence is scaling at a rate that has no historical precedent. Models are becoming more capable, more general, more autonomous. They can write, reason, simulate, and increasingly act. The curve is steep and accelerating.
+
+But wisdom is not on that curve.
+
+Wisdom does not scale with compute. It does not emerge from more parameters or faster inference. It is slower, harder, and deeply human. It comes from lived experience, from failure, from responsibility, from having to carry the consequences of decisions over time.
+
+And that creates a gap.
+
+A widening gap between what we can do and what we should do.
+
+That gap is where risk lives.
+
+Because intelligence without judgment is not neutral. It amplifies whatever goals, incentives, and systems it is placed inside. It does not ask whether the objective is worth pursuing. It optimizes.
+
+And optimization, when misaligned, becomes dangerous.
+
+We are already seeing early versions of this. Systems that maximize engagement at the cost of attention. Systems that generate content without regard for truth. Systems that accelerate decisions without increasing understanding.
+
+None of these are failures of intelligence. They are failures of alignment.
+
+The deeper issue is not whether AI becomes more capable. It will.
+
+The real question is whether the humans deploying it develop the judgment required to guide it.
+
+Because the future will not be shaped by intelligence alone.
+
+It will be shaped by the relationship between intelligence and restraint.
+
+Between capability and responsibility.
+
+Between power and wisdom.
+
+If we continue to scale one without the other, we should not be surprised by the outcome.`,
+    body_es: `Estamos viviendo un desbalance extra\u00f1o.
+
+Durante la mayor parte de la historia humana, la inteligencia y la sabidur\u00eda crec\u00edan juntas. Lentamente, a trav\u00e9s del ensayo y error. Cada nueva herramienta tra\u00eda fricci\u00f3n. Cada avance obligaba a reflexionar sobre sus consecuencias.
+
+Ese equilibrio se est\u00e1 rompiendo.
+
+La inteligencia artificial est\u00e1 escalando a un ritmo sin precedentes. Los sistemas son cada vez m\u00e1s capaces, m\u00e1s generales, m\u00e1s aut\u00f3nomos. Pueden escribir, razonar, simular, y cada vez m\u00e1s, actuar. La curva no solo es empinada, es acelerada.
+
+Pero la sabidur\u00eda no est\u00e1 en esa curva.
+
+La sabidur\u00eda no escala con m\u00e1s c\u00f3mputo. No aparece por tener m\u00e1s par\u00e1metros o mayor velocidad. Es m\u00e1s lenta, m\u00e1s dif\u00edcil, profundamente humana. Nace de la experiencia, del error, de asumir consecuencias a lo largo del tiempo.
+
+Y ah\u00ed aparece la brecha.
+
+Una brecha creciente entre lo que podemos hacer y lo que deber\u00edamos hacer.
+
+Ese espacio es donde vive el riesgo.
+
+Porque la inteligencia sin criterio no es neutral. Amplifica los objetivos, incentivos y sistemas en los que se inserta. No cuestiona si vale la pena perseguir un objetivo. Simplemente optimiza.
+
+Y cuando esa optimizaci\u00f3n est\u00e1 mal alineada, se vuelve peligrosa.
+
+Ya estamos viendo se\u00f1ales tempranas. Sistemas que maximizan el engagement a costa de la atenci\u00f3n. Sistemas que generan contenido sin preocuparse por la verdad. Sistemas que aceleran decisiones sin aumentar la comprensi\u00f3n.
+
+Nada de esto es un fallo de inteligencia. Es un fallo de alineaci\u00f3n.
+
+El problema real no es si la IA ser\u00e1 m\u00e1s capaz. Lo ser\u00e1.
+
+La pregunta importante es si quienes la construyen y la usan desarrollar\u00e1n el criterio necesario para guiarla.
+
+Porque el futuro no se va a definir solo por inteligencia.
+
+Se va a definir por la relaci\u00f3n entre inteligencia y contenci\u00f3n.
+
+Entre capacidad y responsabilidad.
+
+Entre poder y sabidur\u00eda.
+
+Si seguimos escalando una sin la otra, no deber\u00edamos sorprendernos por el resultado.`,
+  },
+  {
+    slug: 'optimization-without-meaning',
+    title: 'The Most Dangerous Idea in AI: Optimization Without Meaning',
+    title_es: 'La idea m\u00e1s peligrosa en la IA: optimizar sin significado',
+    description: 'AI is incredibly effective at optimizing goals, but optimization breaks down when the metric is only a proxy for what actually matters. The danger is not just intelligence, but intelligence pointed at the wrong targets.',
+    description_es: 'La IA es extraordinariamente eficaz optimizando objetivos, pero la optimizaci\u00f3n se rompe cuando la m\u00e9trica es solo un sustituto de lo que realmente importa. El peligro no es solo la inteligencia, sino la inteligencia dirigida hacia los objetivos equivocados.',
+    date: '2026-03-29',
+    readingTime: '6 min read',
+    readingTime_es: '6 min de lectura',
+    category: 'AI & Society',
+    category_es: 'IA y sociedad',
+    featured: true,
+    body: `AI is very good at one thing.
+
+Optimization.
+
+Give it a goal, define a metric, and it will find ways to improve it. Faster, more efficiently, often in ways humans would not have considered.
+
+On the surface, this looks like progress.
+
+But there is a hidden assumption inside optimization that we rarely question.
+
+That the thing being optimized actually matters.
+
+This is where things start to break.
+
+Because not everything that is measurable is meaningful. And not everything meaningful is measurable.
+
+When we build systems that optimize for proxies, we begin to drift away from reality.
+
+Engagement becomes a proxy for value.
+Clicks become a proxy for interest.
+Completion becomes a proxy for understanding.
+
+Over time, the system learns to maximize the proxy, not the truth behind it.
+
+And the more intelligent the system becomes, the better it gets at exploiting that gap.
+
+This is not a bug. It is a feature of optimization.
+
+The system is doing exactly what we asked. Just not what we intended.
+
+The danger is subtle.
+
+At first, optimization improves performance. Metrics go up. Efficiency increases. Everything looks like it is working.
+
+But underneath, meaning erodes.
+
+Content becomes more addictive but less insightful.
+Decisions become faster but more shallow.
+Systems become more effective but less aligned with human values.
+
+We end up with a world that is highly optimized and deeply misaligned.
+
+This is the real risk.
+
+Not that AI becomes uncontrollable, but that it becomes extremely effective at pursuing the wrong things.
+
+And we won't notice immediately, because the dashboards will still look good.
+
+So the challenge is not just building more intelligent systems.
+
+It is choosing what not to optimize.
+
+It is being willing to say that some things should remain inefficient, slow, or human.
+
+Because they carry meaning.
+
+In a world that is increasingly optimized, meaning becomes a constraint.
+
+And constraints, if chosen wisely, are what keep systems aligned with reality.`,
+    body_es: `La IA es extremadamente buena en algo.
+
+Optimizar.
+
+Le das un objetivo, defines una m\u00e9trica, y encuentra la forma de mejorarla. M\u00e1s r\u00e1pido, m\u00e1s eficiente, a veces de maneras que los humanos no habr\u00edan imaginado.
+
+A primera vista, eso parece progreso.
+
+Pero hay una suposici\u00f3n oculta dentro de la optimizaci\u00f3n que casi nunca cuestionamos.
+
+Que aquello que estamos optimizando realmente importa.
+
+Y ah\u00ed es donde empiezan los problemas.
+
+Porque no todo lo que se puede medir tiene significado. Y no todo lo que tiene significado se puede medir.
+
+Cuando construimos sistemas que optimizan proxies, comenzamos a alejarnos de la realidad.
+
+El engagement se vuelve un sustituto del valor.
+Los clics se vuelven un sustituto del inter\u00e9s.
+La finalizaci\u00f3n se vuelve un sustituto de la comprensi\u00f3n.
+
+Con el tiempo, el sistema aprende a maximizar el proxy, no la verdad detr\u00e1s de \u00e9l.
+
+Y mientras m\u00e1s inteligente es el sistema, mejor se vuelve explotando esa diferencia.
+
+Esto no es un error. Es el resultado natural de la optimizaci\u00f3n.
+
+El sistema hace exactamente lo que le pedimos. Simplemente no lo que realmente quer\u00edamos.
+
+El riesgo es sutil.
+
+Al inicio, todo mejora. Las m\u00e9tricas suben. La eficiencia aumenta. Parece que todo funciona.
+
+Pero por debajo, el significado se degrada.
+
+El contenido se vuelve m\u00e1s adictivo, pero menos valioso.
+Las decisiones m\u00e1s r\u00e1pidas, pero m\u00e1s superficiales.
+Los sistemas m\u00e1s efectivos, pero menos alineados con lo humano.
+
+Terminamos con un mundo altamente optimizado y profundamente desalineado.
+
+Ese es el verdadero peligro.
+
+No que la IA se vuelva incontrolable, sino que se vuelva extremadamente buena persiguiendo las cosas equivocadas.
+
+Y no lo vamos a notar de inmediato, porque los dashboards seguir\u00e1n vi\u00e9ndose bien.
+
+Por eso el desaf\u00edo no es solo construir sistemas m\u00e1s inteligentes.
+
+Es decidir qu\u00e9 no optimizar.
+
+Es tener la disciplina de dejar ciertas cosas fuera de la l\u00f3gica de eficiencia.
+
+Porque ah\u00ed es donde vive el significado.
+
+En un mundo cada vez m\u00e1s optimizado, el significado se vuelve una restricci\u00f3n.
+
+Y las restricciones, cuando se eligen bien, son lo que mantienen a los sistemas conectados con la realidad.`,
+  },
+  {
+    slug: 'preparing-for-an-ai-shaped-world',
+    title: 'Preparing for an AI-Shaped World (Without Losing Ourselves)',
+    title_es: 'C\u00f3mo prepararnos para un mundo moldeado por la IA (sin perder lo esencial)',
+    description: 'The people who thrive in an AI-shaped future will not just be the most technical. They will be the clearest in thought, strongest in values, and most capable of using intelligent systems without surrendering their agency.',
+    description_es: 'Las personas que prosperen en un futuro moldeado por la IA no ser\u00e1n solo las m\u00e1s t\u00e9cnicas. Ser\u00e1n las m\u00e1s claras al pensar, las m\u00e1s firmes en sus valores y las m\u00e1s capaces de usar sistemas inteligentes sin entregar su propia agencia.',
+    date: '2026-03-29',
+    readingTime: '6 min read',
+    readingTime_es: '6 min de lectura',
+    category: 'Human Meaning',
+    category_es: 'Sentido humano',
+    featured: false,
+    body: `There is a common instinct when people think about the future of AI.
+
+They try to predict it.
+
+What will jobs look like?
+Which industries will disappear?
+What tools will dominate?
+
+These are useful questions. But they are not the most important ones.
+
+Because the future is not just something we observe.
+
+It is something we shape.
+
+And the way we prepare for it matters more than our ability to forecast it.
+
+Most discussions about preparation focus on skills.
+
+Learn to code.
+Use AI tools.
+Adapt quickly.
+
+All of that helps. But it is incomplete.
+
+Because the people who thrive in an AI-shaped world will not just be the most technically capable.
+
+They will be the most clear.
+
+Clear in how they think.
+Clear in what they value.
+Clear in what they are trying to build.
+
+AI will amplify people.
+
+It will increase the output of those who know what they are doing. And it will accelerate confusion for those who don't.
+
+If you lack direction, AI will not fix that. It will scale it.
+
+So preparation becomes less about chasing tools and more about strengthening fundamentals.
+
+Your ability to think independently.
+Your ability to filter signal from noise.
+Your ability to make decisions under uncertainty.
+Your ability to stay grounded when everything around you is accelerating.
+
+These are not new skills. But they are becoming more valuable.
+
+At the same time, there is something else we need to protect.
+
+Our humanity.
+
+As systems become more capable, there will be a temptation to outsource more of our thinking, our creativity, even our judgment.
+
+Convenience will make that easy.
+
+But if we give away too much, we lose something harder to recover.
+
+Our agency.
+
+The goal is not to resist AI. That would be naive.
+
+The goal is to integrate it without becoming dependent on it.
+
+To use it as a tool, not as a replacement for thinking.
+
+To remain the one deciding what matters.
+
+The future will belong to people who can work with intelligent systems without being absorbed by them.
+
+People who can move fast without losing depth.
+
+People who can build, adapt, and still stay anchored in something real.
+
+That is not a technical challenge.
+
+It is a human one.`,
+    body_es: `Cuando la gente piensa en el futuro de la IA, suele intentar predecirlo.
+
+\u00bfQu\u00e9 trabajos desaparecer\u00e1n?
+\u00bfQu\u00e9 industrias cambiar\u00e1n?
+\u00bfQu\u00e9 herramientas dominar\u00e1n?
+
+Son preguntas v\u00e1lidas. Pero no son las m\u00e1s importantes.
+
+Porque el futuro no es solo algo que observamos.
+
+Es algo que construimos.
+
+Y la forma en que nos preparamos importa m\u00e1s que nuestra capacidad de anticiparlo.
+
+La mayor\u00eda de las conversaciones sobre preparaci\u00f3n giran alrededor de habilidades.
+
+Aprende a programar.
+Usa herramientas de IA.
+Ad\u00e1ptate r\u00e1pido.
+
+Todo eso ayuda. Pero es incompleto.
+
+Porque quienes realmente van a prosperar en un mundo moldeado por la IA no ser\u00e1n solo los m\u00e1s t\u00e9cnicos.
+
+Ser\u00e1n los m\u00e1s claros.
+
+Claros en c\u00f3mo piensan.
+Claros en lo que valoran.
+Claros en lo que est\u00e1n tratando de construir.
+
+La IA amplifica a las personas.
+
+Potencia a quienes tienen direcci\u00f3n. Y acelera la confusi\u00f3n de quienes no la tienen.
+
+Si no tienes claridad, la IA no lo va a solucionar. Lo va a escalar.
+
+Por eso, prepararse deja de ser perseguir herramientas y se convierte en fortalecer fundamentos.
+
+Tu capacidad de pensar por ti mismo.
+Tu capacidad de distinguir se\u00f1al de ruido.
+Tu capacidad de decidir en incertidumbre.
+Tu capacidad de mantenerte centrado mientras todo se acelera.
+
+Estas no son habilidades nuevas. Pero est\u00e1n ganando valor.
+
+Y hay algo m\u00e1s que necesitamos proteger.
+
+Nuestra humanidad.
+
+A medida que los sistemas se vuelven m\u00e1s capaces, la tentaci\u00f3n ser\u00e1 delegar cada vez m\u00e1s: pensamiento, creatividad, incluso criterio.
+
+La conveniencia lo har\u00e1 f\u00e1cil.
+
+Pero si cedemos demasiado, perdemos algo dif\u00edcil de recuperar.
+
+Nuestra agencia.
+
+El objetivo no es resistir la IA. Eso ser\u00eda ingenuo.
+
+El objetivo es integrarla sin depender de ella.
+
+Usarla como herramienta, no como sustituto del pensamiento.
+
+Seguir siendo quienes deciden qu\u00e9 importa.
+
+El futuro pertenecer\u00e1 a quienes puedan trabajar con sistemas inteligentes sin ser absorbidos por ellos.
+
+A quienes puedan moverse r\u00e1pido sin perder profundidad.
+
+A quienes puedan construir, adaptarse, y mantenerse anclados en algo real.
+
+Eso no es un problema t\u00e9cnico.
+
+Es un desaf\u00edo humano.`,
+  },
 ]
 
 export function getPost(slug: string): Post | undefined {
