@@ -3,9 +3,9 @@ import BlurText from '@/components/BlurText'
 import GlassCard from '@/components/GlassCard'
 
 const contactMethods = [
-  { icon: Mail, label: 'Email', value: 'hello@rodolfoavalos.com', href: 'mailto:hello@rodolfoavalos.com' },
+  { icon: Mail, label: 'Email', value: 'rodolfoavalos635@gmail.com', href: 'mailto:rodolfoavalos635@gmail.com' },
   { icon: Linkedin, label: 'LinkedIn', value: 'linkedin.com/in/rodolfo-avalos', href: 'https://www.linkedin.com/in/rodolfo-avalos-69683168/' },
-  { icon: Github, label: 'GitHub', value: 'github.com/rodolfoavalos', href: 'https://github.com/rodolfoavalos' },
+  { icon: Github, label: 'GitHub', value: 'github.com/Rac2022', href: 'https://github.com/Rac2022' },
   { icon: Calendar, label: 'Schedule', value: 'Book a conversation', href: '#' },
 ]
 
@@ -36,7 +36,7 @@ export default function ContactSection() {
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
           <a
-            href="mailto:hello@rodolfoavalos.com"
+            href="mailto:rodolfoavalos635@gmail.com"
             className="liquid-glass-strong flex items-center gap-2 px-6 py-3 rounded-full font-body font-medium text-sm text-white hover:bg-white/10 transition-colors"
           >
             Connect With Me <ArrowUpRight className="w-4 h-4" />
