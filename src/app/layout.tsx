@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Classroom Clash: Tug of War Math",
+  title: 'CE Strategy Snapshot',
   description:
-    "A fun, competitive math game for classrooms. Two teams race to solve problems and pull the rope!",
+    'See what a cleaner CE strategy could look like for your therapy team. An illustrative planning tool for rehab directors and therapy managers.',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="overflow-hidden">{children}</body>
+      <body className="bg-gray-50 text-slate-800 antialiased">{children}</body>
     </html>
   );
 }
