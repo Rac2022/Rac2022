@@ -1,19 +1,24 @@
 @import "tailwindcss";
 
-@theme {
-  --color-plug-green: #10b981;
-  --color-plug-green-dark: #059669;
-  --color-plug-blue: #3b82f6;
-  --color-plug-navy: #1e293b;
-  --color-plug-gray: #f8fafc;
+html {
+  scroll-behavior: smooth;
 }
 
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes pulse-badge {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+/* Print-friendly styles */
+@media print {
+  header,
+  footer,
+  button {
+    display: none !important;
+  }
+
+  .shadow-sm,
+  .shadow-xl {
+    box-shadow: none !important;
+  }
 }
