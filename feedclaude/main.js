@@ -59,59 +59,33 @@ function refocusPreviousApp() {
   setTimeout(run, delayMs);
 }
 
-function createTrayIconFallback() {
-  const p = path.join(__dirname, 'icon', 'Template.png');
-  if (fs.existsSync(p)) {
-    const img = nativeImage.createFromPath(p);
-    if (!img.isEmpty()) {
-      if (process.platform === 'darwin') img.setTemplateImage(true);
-      return img;
-    }
-  }
-  console.warn('feedclaude: icon/Template.png missing or invalid');
-  return nativeImage.createEmpty();
-}
-
-async function tryIcnsTrayImage(icnsPath) {
-  const size = { width: 64, height: 64 };
-  const thumb = nativeImage.createThumbnailFromPath(icnsPath, size);
-  if (!thumb.isEmpty()) return thumb;
-  return null;
-}
-
+/** Generate a taco emoji tray icon using an offscreen BrowserWindow. */
 async function getTrayIcon() {
-  const iconDir = path.join(__dirname, 'icon');
-  if (process.platform === 'win32') {
-    const file = path.join(iconDir, 'icon.ico');
-    if (fs.existsSync(file)) {
-      const img = nativeImage.createFromPath(file);
-      if (!img.isEmpty()) return img;
-    }
-    return createTrayIconFallback();
-  }
-  if (process.platform === 'darwin') {
-    const file = path.join(iconDir, 'AppIcon.icns');
-    if (fs.existsSync(file)) {
-      const fromPath = nativeImage.createFromPath(file);
-      if (!fromPath.isEmpty()) return fromPath;
-      try {
-        const t = await tryIcnsTrayImage(file);
-        if (t) return t;
-      } catch (e) {
-        console.warn('AppIcon.icns Quick Look thumbnail failed:', e?.message || e);
-      }
-      const tmp = path.join(os.tmpdir(), 'feedclaude-tray.icns');
-      try {
-        fs.copyFileSync(file, tmp);
-        const t = await tryIcnsTrayImage(tmp);
-        if (t) return t;
-      } catch (e) {
-        console.warn('AppIcon.icns temp copy + thumbnail failed:', e?.message || e);
-      }
-    }
-    return createTrayIconFallback();
-  }
-  return createTrayIconFallback();
+  const size = process.platform === 'darwin' ? 22 : 32;
+  const scale = process.platform === 'darwin' ? 2 : 1;
+  const px = size * scale;
+
+  // Use a hidden BrowserWindow to render the emoji to a canvas
+  const win = new BrowserWindow({
+    width: px, height: px,
+    show: false,
+    frame: false,
+    transparent: true,
+    webPreferences: { offscreen: true },
+  });
+
+  const html = `<html><body style="margin:0;background:transparent;display:flex;align-items:center;justify-content:center;width:${px}px;height:${px}px;">
+    <span style="font-size:${px - 4}px;line-height:1;">🌮</span>
+  </body></html>`;
+
+  await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  // Small delay to let the emoji render
+  await new Promise(r => setTimeout(r, 150));
+  const img = await win.webContents.capturePage();
+  win.destroy();
+
+  if (process.platform === 'darwin') img.setTemplateImage(false);
+  return img;
 }
 
 // ── Overlay window ──────────────────────────────────────────────────────────
