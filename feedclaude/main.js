@@ -175,8 +175,9 @@ function createOverlay() {
 function toggleOverlay() {
   console.log('feedclaude: toggleOverlay called');
   if (overlay && overlay.isVisible()) {
-    console.log('feedclaude: dropping food');
+    console.log('feedclaude: hiding overlay');
     overlay.webContents.send('drop-food');
+    overlay.hide();
     return;
   }
   if (!overlay) createOverlay();
@@ -184,11 +185,11 @@ function toggleOverlay() {
   overlay.show();
   overlay.focus();
   if (overlayReady) {
-    console.log('feedclaude: spawning food');
+    console.log('feedclaude: spawning food — wave your mouse fast!');
     overlay.webContents.send('spawn-food');
     refocusPreviousApp();
   } else {
-    console.log('feedclaude: overlay not ready yet, queuing spawn');
+    console.log('feedclaude: overlay loading, queuing spawn');
     spawnQueued = true;
   }
 }
