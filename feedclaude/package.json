@@ -1,0 +1,46 @@
+{
+  "name": "feedclaude",
+  "version": "1.0.0",
+  "description": "Feed Claude tacos and burritos instead of waving a wand",
+  "license": "MIT",
+  "main": "main.js",
+  "bin": {
+    "feedclaude": "bin/feedclaude.js"
+  },
+  "os": [
+    "darwin",
+    "win32"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "electron",
+    "tray",
+    "overlay",
+    "cli",
+    "encouragement",
+    "claude",
+    "taco",
+    "burrito",
+    "food"
+  ],
+  "files": [
+    "main.js",
+    "preload.js",
+    "overlay.html",
+    "sounds",
+    "icon",
+    "bin/feedclaude.js",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "pack": "npm pack"
+  },
+  "dependencies": {
+    "electron": "^33.0.0",
+    "koffi": "^2.9.0"
+  }
+}

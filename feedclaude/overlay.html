@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; cursor: none; }
+  html, body { overflow: hidden; background: transparent; width: 100%; height: 100%; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// ABOUTME: Food toss overlay — toss tacos & burritos to Claude with salsa particle effects
+// ABOUTME: Move cursor fast to launch food and send encouragement to Claude
+
+const P = {
+  foodSize:        48,      // emoji font size
+  bobAmplitude:    8,       // how much the food bobs up and down
+  bobSpeed:        0.004,   // bob frequency
+  trailRate:       0.15,    // chance to spawn a trail particle per frame when moving
+  tossThreshold:   18,      // mouse speed to trigger a food toss
+  tossCooldownMs:  2500,    // min ms between tosses
+  firstTossGraceMs: 400,   // no toss until this long after spawn
+  bgAlpha:         0.011,   // barely-visible bg so window captures mouse events
+  fadeSpeed:        0.04,   // how fast food fades on drop
+};
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+let mouseX = 0, mouseY = 0;
+let prevMouseX = 0, prevMouseY = 0;
+let active = false;
+let dropping = false;
+let dropOpacity = 1;
+let spawnTime = 0;
+let lastTossTime = 0;
+let smoothSpeed = 0;
+
+// Randomly pick taco or burrito each time the overlay spawns
+const FOODS = ['🌮', '🌯'];
+let currentFood = FOODS[0];
+
+document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+document.addEventListener('mousedown', () => {
+  if (active && !dropping) dropping = true;
+});
+
+// ── Salsa / cheese / lettuce particles ─────────────────────────────────────
+let particles = [];
+const MAX_PARTICLES = 300;
+
+// Warm food colors: reds, oranges, yellows, greens (salsa, cheese, lettuce, hot sauce)
+const FOOD_HUES = [0, 15, 30, 45, 60, 100, 120]; // red, orange, yellow, green
+
+function spawnParticle(x, y, burst) {
+  if (particles.length >= MAX_PARTICLES) return;
+  const speed = burst ? (Math.random() * 6 + 2) : (Math.random() * 1.5 + 0.3);
+  const angle = Math.random() * Math.PI * 2;
+  const hue = FOOD_HUES[Math.floor(Math.random() * FOOD_HUES.length)];
+  particles.push({
+    x, y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed - (burst ? 3 : 0.8),
+    life: 1.0,
+    decay: burst ? (0.008 + Math.random() * 0.015) : (0.015 + Math.random() * 0.03),
+    size: burst ? (Math.random() * 6 + 3) : (Math.random() * 4 + 1),
+    hue: hue,
+    shape: burst ? (Math.random() < 0.4 ? 'star' : 'circle') : 'circle',
+  });
+}
+
+function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.04; // gravity — heavier than sparkles
+    p.vx *= 0.98;
+    p.life -= p.decay;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawStarShape(cx, cy, r, points) {
+  ctx.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const a = (i * Math.PI) / points - Math.PI / 2;
+    const radius = i % 2 === 0 ? r : r * 0.3;
+    const x = cx + Math.cos(a) * radius;
+    const y = cy + Math.sin(a) * radius;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    const alpha = p.life * p.life;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const sat = 90;
+    const light = 50 + p.life * 20;
+    ctx.fillStyle = `hsl(${p.hue}, ${sat}%, ${light}%)`;
+    ctx.shadowColor = `hsl(${p.hue}, 100%, 70%)`;
+    ctx.shadowBlur = 8 * p.life;
+    if (p.shape === 'star') {
+      drawStarShape(p.x, p.y, p.size * (0.5 + p.life * 0.5), 5);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// ── Tossed food items that fly across screen ───────────────────────────────
+let tossedFoods = [];
+
+function tossFood(x, y) {
+  const emoji = FOODS[Math.floor(Math.random() * FOODS.length)];
+  const angle = -Math.PI / 4 + (Math.random() - 0.5) * 0.8;
+  const speed = 8 + Math.random() * 6;
+  tossedFoods.push({
+    x, y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed - 4,
+    emoji,
+    life: 1.0,
+    spin: (Math.random() - 0.5) * 0.3,
+    rotation: 0,
+    size: 36 + Math.random() * 20,
+  });
+}
+
+function updateTossedFoods() {
+  for (let i = tossedFoods.length - 1; i >= 0; i--) {
+    const f = tossedFoods[i];
+    f.x += f.vx;
+    f.y += f.vy;
+    f.vy += 0.15; // gravity
+    f.rotation += f.spin;
+    f.life -= 0.008;
+    // Trail particles from tossed food
+    if (Math.random() < 0.3 && f.life > 0.3) {
+      spawnParticle(f.x, f.y, false);
+    }
+    if (f.life <= 0 || f.y > H + 100) tossedFoods.splice(i, 1);
+  }
+}
+
+function drawTossedFoods() {
+  for (const f of tossedFoods) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(f.life * 2, 1);
+    ctx.translate(f.x, f.y);
+    ctx.rotate(f.rotation);
+    ctx.font = `${f.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(f.emoji, 0, 0);
+    ctx.restore();
+  }
+}
+
+// ── Munch sound (playful bite sound) ───────────────────────────────────────
+function playMunchSound() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    // Crunchy munch: short noise bursts + a satisfying low thump
+    const now = ac.currentTime;
+
+    // Low thump
+    const osc1 = ac.createOscillator();
+    const gain1 = ac.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(120, now);
+    osc1.frequency.exponentialRampToValueAtTime(60, now + 0.15);
+    gain1.gain.setValueAtTime(0.15, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    osc1.connect(gain1);
+    gain1.connect(ac.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.25);
+
+    // Crunch noise
+    const bufferSize = ac.sampleRate * 0.1;
+    const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
+    const noise = ac.createBufferSource();
+    noise.buffer = buffer;
+    const noiseGain = ac.createGain();
+    noiseGain.gain.setValueAtTime(0.08, now + 0.05);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    const filter = ac.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 3000;
+    filter.Q.value = 2;
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(ac.destination);
+    noise.start(now + 0.05);
+    noise.stop(now + 0.2);
+
+    // Happy rising tone
+    const osc2 = ac.createOscillator();
+    const gain2 = ac.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(400, now + 0.1);
+    osc2.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+    gain2.gain.setValueAtTime(0.06, now + 0.1);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    osc2.connect(gain2);
+    gain2.connect(ac.destination);
+    osc2.start(now + 0.1);
+    osc2.stop(now + 0.45);
+  } catch (e) {}
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// ── Update ─────────────────────────────────────────────────────────────────
+function update() {
+  updateParticles();
+  updateTossedFoods();
+  if (!active) return;
+
+  const mvx = mouseX - prevMouseX;
+  const mvy = mouseY - prevMouseY;
+  const speed = Math.hypot(mvx, mvy);
+
+  if (!dropping) {
+    // Spawn trail particles when moving
+    if (speed > 3 && Math.random() < P.trailRate) {
+      spawnParticle(mouseX, mouseY, false);
+    }
+    if (speed > 8 && Math.random() < P.trailRate * 2) {
+      spawnParticle(mouseX, mouseY, false);
+    }
+
+    // Food toss detection: sustained fast movement
+    smoothSpeed = smoothSpeed * 0.75 + speed * 0.25;
+    const now = Date.now();
+    if (smoothSpeed > P.tossThreshold &&
+        now - spawnTime >= P.firstTossGraceMs &&
+        now - lastTossTime > P.tossCooldownMs) {
+      lastTossTime = now;
+      playMunchSound();
+      // Burst of particles
+      for (let i = 0; i < 25; i++) spawnParticle(mouseX, mouseY, true);
+      // Toss 3 food items
+      for (let i = 0; i < 3; i++) tossFood(mouseX, mouseY);
+      window.bridge.sendFood();
+    }
+  } else {
+    // Dropping: fade out
+    dropOpacity -= P.fadeSpeed;
+    if (dropOpacity > 0 && Math.random() < 0.3) {
+      spawnParticle(mouseX, mouseY, false);
+    }
+    if (dropOpacity <= 0 && particles.length === 0 && tossedFoods.length === 0) {
+      active = false;
+      dropping = false;
+      window.bridge.hideOverlay();
+    }
+  }
+
+  prevMouseX = mouseX;
+  prevMouseY = mouseY;
+}
+
+// ── Rendering ──────────────────────────────────────────────────────────────
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = `rgba(0,0,0,${P.bgAlpha})`;
+  ctx.fillRect(0, 0, W, H);
+
+  drawParticles();
+  drawTossedFoods();
+
+  if (!active) return;
+
+  const opacity = dropping ? Math.max(dropOpacity, 0) : 1;
+  if (opacity <= 0) return;
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+
+  // Draw the food emoji following the cursor with a gentle bob
+  const bob = Math.sin(Date.now() * P.bobSpeed) * P.bobAmplitude;
+  const foodX = mouseX;
+  const foodY = mouseY + bob;
+
+  // Warm glow behind the food
+  const gradient = ctx.createRadialGradient(foodX, foodY, 5, foodX, foodY, 50);
+  gradient.addColorStop(0, 'rgba(255, 165, 0, 0.25)');
+  gradient.addColorStop(0.5, 'rgba(255, 100, 0, 0.1)');
+  gradient.addColorStop(1, 'rgba(255, 69, 0, 0)');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(foodX, foodY, 50, 0, Math.PI * 2);
+  ctx.fill();
+
+  // The food emoji itself
+  ctx.font = `${P.foodSize}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(currentFood, foodX, foodY);
+
+  // Small label underneath
+  ctx.font = '12px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.fillText('move fast to feed Claude!', foodX, foodY + 38);
+
+  ctx.restore();
+}
+
+// ── Main loop ──────────────────────────────────────────────────────────────
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ── IPC from main process ──────────────────────────────────────────────────
+window.bridge.onSpawnFood(() => {
+  active = true;
+  dropping = false;
+  dropOpacity = 1;
+  smoothSpeed = 0;
+  spawnTime = Date.now();
+  lastTossTime = 0;
+  prevMouseX = mouseX;
+  prevMouseY = mouseY;
+  // Pick a random food for this session
+  currentFood = FOODS[Math.floor(Math.random() * FOODS.length)];
+});
+
+window.bridge.onDropFood(() => {
+  if (active && !dropping) dropping = true;
+});
+
+</script>
+</body>
+</html>
