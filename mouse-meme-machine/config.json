@@ -1,0 +1,19 @@
+{
+  "click_sound_enabled": true,
+  "meme_popup_enabled": true,
+  "sound_volume": 0.7,
+  "popup_duration": 2.0,
+  "popup_size": [300, 300],
+  "sounds": {
+    "left_click": "assets/sounds/bruh.mp3",
+    "right_click": "assets/sounds/wow.mp3",
+    "middle_click": "assets/sounds/vine-boom.mp3"
+  },
+  "meme_images": [
+    "assets/images/meme1.png",
+    "assets/images/meme2.png",
+    "assets/images/meme3.png"
+  ],
+  "meme_trigger": "double_click",
+  "cooldown_seconds": 1.0
+}
