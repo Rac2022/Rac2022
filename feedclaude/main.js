@@ -59,32 +59,77 @@ function refocusPreviousApp() {
   setTimeout(run, delayMs);
 }
 
-/** Generate a taco emoji tray icon using an offscreen BrowserWindow. */
-async function getTrayIcon() {
-  const size = process.platform === 'darwin' ? 22 : 32;
-  const scale = process.platform === 'darwin' ? 2 : 1;
-  const px = size * scale;
+/** Create a taco tray icon by drawing on a canvas via data URL. */
+function getTrayIcon() {
+  // 16x16 taco icon as a hand-drawn PNG-compatible pixel art via raw RGBA buffer
+  const size = 16;
+  const buf = Buffer.alloc(size * size * 4, 0); // RGBA
 
-  // Use a hidden BrowserWindow to render the emoji to a canvas
-  const win = new BrowserWindow({
-    width: px, height: px,
-    show: false,
-    frame: false,
-    transparent: true,
-    webPreferences: { offscreen: true },
-  });
+  // Draw a simple taco shape: orange/yellow shell + green/red filling
+  const set = (x, y, r, g, b, a = 255) => {
+    if (x < 0 || x >= size || y < 0 || y >= size) return;
+    const i = (y * size + x) * 4;
+    buf[i] = r; buf[i+1] = g; buf[i+2] = b; buf[i+3] = a;
+  };
 
-  const html = `<html><body style="margin:0;background:transparent;display:flex;align-items:center;justify-content:center;width:${px}px;height:${px}px;">
-    <span style="font-size:${px - 4}px;line-height:1;">🌮</span>
-  </body></html>`;
+  // Taco shell (golden arc) - rows 4-13
+  const shell = [
+    // [y, xStart, xEnd]
+    [4,  6, 9],
+    [5,  4, 11],
+    [6,  3, 12],
+    [7,  2, 13],
+    [8,  2, 13],
+    [9,  2, 13],
+    [10, 3, 12],
+    [11, 3, 12],
+    [12, 4, 11],
+    [13, 5, 10],
+  ];
 
-  await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
-  // Small delay to let the emoji render
-  await new Promise(r => setTimeout(r, 150));
-  const img = await win.webContents.capturePage();
-  win.destroy();
+  // Draw shell outline (darker orange)
+  for (const [y, x1, x2] of shell) {
+    for (let x = x1; x <= x2; x++) {
+      set(x, y, 210, 150, 50);
+    }
+  }
 
-  if (process.platform === 'darwin') img.setTemplateImage(false);
+  // Fill interior (lighter yellow)
+  const interior = [
+    [5,  5, 10],
+    [6,  4, 11],
+    [7,  3, 12],
+    [8,  3, 12],
+    [9,  3, 12],
+    [10, 4, 11],
+    [11, 4, 11],
+    [12, 5, 10],
+  ];
+  for (const [y, x1, x2] of interior) {
+    for (let x = x1; x <= x2; x++) {
+      set(x, y, 240, 190, 80);
+    }
+  }
+
+  // Filling: lettuce (green), meat (brown), tomato (red), cheese (yellow)
+  const fillings = [
+    // Green lettuce - top of filling
+    [5, 5, 80, 180, 80], [5, 6, 60, 160, 60], [5, 7, 80, 180, 80],
+    [5, 8, 60, 160, 60], [5, 9, 80, 180, 80], [5, 10, 60, 160, 60],
+    // Tomato red
+    [6, 5, 220, 60, 50], [6, 7, 220, 60, 50], [6, 9, 220, 60, 50], [6, 11, 220, 60, 50],
+    // Cheese yellow
+    [6, 6, 255, 220, 80], [6, 8, 255, 220, 80], [6, 10, 255, 220, 80],
+    // Meat brown
+    [7, 4, 160, 90, 50], [7, 5, 150, 80, 40], [7, 6, 160, 90, 50],
+    [7, 7, 150, 80, 40], [7, 8, 160, 90, 50], [7, 9, 150, 80, 40],
+    [7, 10, 160, 90, 50], [7, 11, 150, 80, 40],
+  ];
+  for (const [y, x, r, g, b] of fillings) {
+    set(x, y, r, g, b);
+  }
+
+  const img = nativeImage.createFromBuffer(buf, { width: size, height: size });
   return img;
 }
 
@@ -216,8 +261,8 @@ function sendMacroMac(text) {
 }
 
 // ── App lifecycle ───────────────────────────────────────────────────────────
-app.whenReady().then(async () => {
-  tray = new Tray(await getTrayIcon());
+app.whenReady().then(() => {
+  tray = new Tray(getTrayIcon());
   tray.setToolTip('Feed Claude – click to toss a taco or burrito!');
   tray.setContextMenu(
     Menu.buildFromTemplate([
