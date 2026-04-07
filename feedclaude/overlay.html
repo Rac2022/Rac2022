@@ -18,9 +18,9 @@ const P = {
   bobAmplitude:    8,       // how much the food bobs up and down
   bobSpeed:        0.004,   // bob frequency
   trailRate:       0.15,    // chance to spawn a trail particle per frame when moving
-  tossThreshold:   18,      // mouse speed to trigger a food toss
-  tossCooldownMs:  2500,    // min ms between tosses
-  firstTossGraceMs: 400,   // no toss until this long after spawn
+  tossThreshold:   12,      // mouse speed to trigger a food toss (lower = easier)
+  tossCooldownMs:  1500,    // min ms between tosses
+  firstTossGraceMs: 300,   // no toss until this long after spawn
   bgAlpha:         0.011,   // barely-visible bg so window captures mouse events
   fadeSpeed:        0.04,   // how fast food fades on drop
 };
@@ -47,7 +47,8 @@ let currentFood = FOODS[0];
 
 document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
 document.addEventListener('mousedown', () => {
-  if (active && !dropping) dropping = true;
+  // Don't dismiss for 1.5 seconds after spawn so it doesn't close immediately
+  if (active && !dropping && Date.now() - spawnTime > 1500) dropping = true;
 });
 
 // ── Salsa / cheese / lettuce particles ─────────────────────────────────────
@@ -315,10 +316,13 @@ function draw() {
   ctx.textBaseline = 'middle';
   ctx.fillText(currentFood, foodX, foodY);
 
-  // Small label underneath
+  // Label underneath
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.fillText('wave fast to feed Claude!', foodX, foodY + 42);
   ctx.font = '12px sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-  ctx.fillText('move fast to feed Claude!', foodX, foodY + 38);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.fillText('click to dismiss', foodX, foodY + 60);
 
   ctx.restore();
 }
