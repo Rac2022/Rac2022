@@ -6,5 +6,11 @@
   "popup_size": [250, 250],
   "cooldown_seconds": 1.0,
   "sounds_dir": "assets/sounds",
-  "images_dir": "assets/images"
+  "images_dir": "assets/images",
+
+  "taco_wand_enabled": true,
+  "taco_wand_trigger": "middle",
+  "taco_wand_trail_length": 12,
+  "taco_wand_duration": 1.2,
+  "wasting_sound_dir": "assets/wasting"
 }
