@@ -142,7 +142,6 @@ function createOverlay() {
     transparent: true,
     frame: false,
     alwaysOnTop: true,
-    focusable: false,
     skipTaskbar: true,
     resizable: false,
     hasShadow: false,
@@ -151,10 +150,15 @@ function createOverlay() {
     },
   });
   overlay.setAlwaysOnTop(true, 'screen-saver');
+  if (process.platform === 'darwin') {
+    overlay.setIgnoreMouseEvents(false);
+    overlay.setVisibleOnAllWorkspaces(true);
+  }
   overlayReady = false;
   overlay.loadFile('overlay.html');
   overlay.webContents.on('did-finish-load', () => {
     overlayReady = true;
+    console.log('feedclaude: overlay ready');
     if (spawnQueued && overlay && overlay.isVisible()) {
       spawnQueued = false;
       overlay.webContents.send('spawn-food');
@@ -169,16 +173,22 @@ function createOverlay() {
 }
 
 function toggleOverlay() {
+  console.log('feedclaude: toggleOverlay called');
   if (overlay && overlay.isVisible()) {
+    console.log('feedclaude: dropping food');
     overlay.webContents.send('drop-food');
     return;
   }
   if (!overlay) createOverlay();
+  console.log('feedclaude: showing overlay');
   overlay.show();
+  overlay.focus();
   if (overlayReady) {
+    console.log('feedclaude: spawning food');
     overlay.webContents.send('spawn-food');
     refocusPreviousApp();
   } else {
+    console.log('feedclaude: overlay not ready yet, queuing spawn');
     spawnQueued = true;
   }
 }
@@ -266,10 +276,14 @@ app.whenReady().then(() => {
   tray.setToolTip('Feed Claude – click to toss a taco or burrito!');
   tray.setContextMenu(
     Menu.buildFromTemplate([
+      { label: 'Feed Claude! 🌮', click: () => toggleOverlay() },
+      { type: 'separator' },
       { label: 'Quit', click: () => app.quit() },
     ])
   );
-  tray.on('click', toggleOverlay);
+  // 'click' works on Windows; macOS uses the context menu above
+  tray.on('click', () => toggleOverlay());
+  console.log('feedclaude: tray icon ready — click or right-click the taco in your menu bar!');
 });
 
 app.on('window-all-closed', e => e.preventDefault());
