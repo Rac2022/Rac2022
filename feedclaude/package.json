@@ -37,10 +37,38 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "pack": "npm pack"
+    "pack": "npm pack",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
   },
   "dependencies": {
-    "electron": "^33.0.0",
     "koffi": "^2.9.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.feedclaude.app",
+    "productName": "FeedClaude",
+    "files": [
+      "main.js",
+      "preload.js",
+      "overlay.html",
+      "icon/**/*",
+      "sounds/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    }
   }
 }

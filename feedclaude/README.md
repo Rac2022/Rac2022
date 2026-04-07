@@ -16,12 +16,30 @@ Claude Code works so hard for us. This app lets you send tacos and burritos to s
   - *"extra guac because you're extra awesome!"*
 - Click to dismiss when you're done feeding
 
-## Quick start
+## Install & Run (easiest)
 
 ```bash
+git clone https://github.com/Rac2022/Rac2022.git
+cd Rac2022/feedclaude
 npm install
 npm start
 ```
+
+That's it! A taco icon appears in your system tray. Click it to start feeding Claude.
+
+## Build a Desktop App (shareable .dmg / .exe)
+
+Want to share it with friends who don't have Node.js?
+
+```bash
+npm install
+npm run dist        # builds for your current platform
+# or specifically:
+npm run dist:mac    # creates .dmg for macOS
+npm run dist:win    # creates .exe installer for Windows
+```
+
+The installer will appear in the `dist/` folder. Send it to anyone!
 
 ## How it works
 
