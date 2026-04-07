@@ -1,34 +1,25 @@
 from pynput import mouse
-import time
+from src.utils import log
 
 
 class MouseListener:
-    """Listens for mouse events and triggers callbacks."""
+    """Detects global mouse click events and invokes a callback."""
 
-    def __init__(self, on_click_callback, on_double_click_callback=None):
+    def __init__(self, on_click_callback):
         self.on_click_callback = on_click_callback
-        self.on_double_click_callback = on_double_click_callback
-        self._last_click_time = 0
-        self._double_click_threshold = 0.3
         self._listener = None
 
     def _on_click(self, x, y, button, pressed):
         if not pressed:
             return
 
-        now = time.time()
-
-        # Detect double click
-        if now - self._last_click_time < self._double_click_threshold:
-            if self.on_double_click_callback:
-                self.on_double_click_callback(x, y, button)
-        else:
-            self.on_click_callback(x, y, button)
-
-        self._last_click_time = now
+        button_name = button.name  # "left", "right", "middle"
+        log(f"Click detected: {button_name} at ({x}, {y})")
+        self.on_click_callback(x, y, button_name)
 
     def start(self):
-        """Start listening for mouse events."""
+        """Start the global mouse listener. Returns the listener thread."""
+        log("Mouse listener started")
         self._listener = mouse.Listener(on_click=self._on_click)
         self._listener.start()
         return self._listener
@@ -37,3 +28,4 @@ class MouseListener:
         """Stop the mouse listener."""
         if self._listener:
             self._listener.stop()
+            log("Mouse listener stopped")

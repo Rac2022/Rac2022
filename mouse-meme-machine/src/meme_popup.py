@@ -1,45 +1,58 @@
+import random
+import threading
 import tkinter as tk
 from PIL import Image, ImageTk
-import random
-import os
-import threading
+from src.utils import load_files_from_dir, resolve_path, log, IMAGE_EXTENSIONS
 
 
 class MemePopup:
-    """Displays meme images as popups at the cursor position."""
+    """Displays a random meme image in a borderless popup near the cursor."""
 
-    def __init__(self, image_paths, popup_size=(300, 300), duration=2.0):
-        self.image_paths = [p for p in image_paths if os.path.exists(p)]
+    def __init__(self, images_dir, popup_size=(250, 250), duration=1.0):
         self.popup_size = popup_size
         self.duration = duration
 
+        full_path = resolve_path(images_dir)
+        self.image_paths = load_files_from_dir(full_path, IMAGE_EXTENSIONS)
+        log(f"Meme popup ready: {len(self.image_paths)} image(s) found")
+
     def show(self, x, y):
-        """Show a random meme popup at the given screen position."""
+        """Show a random meme popup near the given screen coordinates."""
         if not self.image_paths:
-            print("Warning: No meme images available")
+            log("No meme images available to show")
             return
+
         image_path = random.choice(self.image_paths)
-        thread = threading.Thread(target=self._display, args=(x, y, image_path), daemon=True)
+        log(f"Showing meme: {image_path}")
+        thread = threading.Thread(
+            target=self._display, args=(x, y, image_path), daemon=True
+        )
         thread.start()
 
     def _display(self, x, y, image_path):
-        """Display the popup window (runs in its own thread)."""
+        """Render the popup window in its own thread."""
         root = tk.Tk()
         root.overrideredirect(True)
         root.attributes("-topmost", True)
+        root.configure(bg="black")
 
         width, height = self.popup_size
-        root.geometry(f"{width}x{height}+{x}+{y}")
+        # Offset slightly so the popup doesn't land right under the cursor
+        root.geometry(f"{width}x{height}+{x + 15}+{y + 15}")
 
         try:
             img = Image.open(image_path)
             img = img.resize((width, height), Image.LANCZOS)
             photo = ImageTk.PhotoImage(img)
-            label = tk.Label(root, image=photo)
-            label.image = photo
+            label = tk.Label(root, image=photo, borderwidth=0)
+            label.image = photo  # prevent garbage collection
             label.pack()
         except Exception as e:
-            label = tk.Label(root, text=f"MEME\n{e}", font=("Arial", 20))
+            log(f"Error displaying image {image_path}: {e}")
+            label = tk.Label(
+                root, text="MEME!", font=("Arial", 24, "bold"),
+                fg="white", bg="black",
+            )
             label.pack(expand=True)
 
         root.after(int(self.duration * 1000), root.destroy)

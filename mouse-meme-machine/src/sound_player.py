@@ -1,37 +1,40 @@
+import random
 import pygame
-import os
+from src.utils import load_files_from_dir, resolve_path, log, SOUND_EXTENSIONS
 
 
 class SoundPlayer:
-    """Plays sound effects on mouse events."""
+    """Loads sound files from a directory and plays one at random."""
 
-    def __init__(self, volume=0.7):
+    def __init__(self, sounds_dir, volume=0.7):
         pygame.mixer.init()
         self.volume = volume
-        self._sounds = {}
+        self._sounds = []
 
-    def load_sound(self, name, file_path):
-        """Load a sound file and store it by name."""
-        if os.path.exists(file_path):
-            sound = pygame.mixer.Sound(file_path)
-            sound.set_volume(self.volume)
-            self._sounds[name] = sound
-        else:
-            print(f"Warning: Sound file not found: {file_path}")
+        full_path = resolve_path(sounds_dir)
+        files = load_files_from_dir(full_path, SOUND_EXTENSIONS)
 
-    def play(self, name):
-        """Play a loaded sound by name."""
-        if name in self._sounds:
-            self._sounds[name].play()
-        else:
-            print(f"Warning: Sound '{name}' not loaded")
+        for filepath in files:
+            try:
+                sound = pygame.mixer.Sound(filepath)
+                sound.set_volume(self.volume)
+                self._sounds.append((filepath, sound))
+                log(f"Loaded sound: {filepath}")
+            except Exception as e:
+                log(f"Failed to load sound {filepath}: {e}")
 
-    def set_volume(self, volume):
-        """Set volume for all loaded sounds."""
-        self.volume = max(0.0, min(1.0, volume))
-        for sound in self._sounds.values():
-            sound.set_volume(self.volume)
+        log(f"Sound player ready: {len(self._sounds)} sound(s) loaded")
+
+    def play_random(self):
+        """Play a random loaded sound. Does nothing if no sounds are loaded."""
+        if not self._sounds:
+            log("No sounds available to play")
+            return
+        filepath, sound = random.choice(self._sounds)
+        sound.play()
+        log(f"Playing: {filepath}")
 
     def cleanup(self):
-        """Clean up pygame mixer."""
+        """Shut down the pygame mixer."""
         pygame.mixer.quit()
+        log("Sound player cleaned up")
