@@ -250,7 +250,16 @@ let floatingTexts = [];
 
 function spawnFloatingText(x, y) {
   feedCount++;
-  const msgs = ['NOM!', 'CRUNCH!', 'YUM!', 'DELICIOUS!', 'FED! 🌮', 'TASTY! 🌯', 'MUNCH!'];
+  const food = currentFood === '🌮' ? 'TACO' : 'BURRITO';
+  const msgs = [
+    `${currentFood} NOM NOM!`,
+    `${currentFood} CRUNCH!`,
+    `${currentFood} YUM!`,
+    `FED A ${food}!`,
+    `${currentFood} DELICIOUS!`,
+    `HAVE A ${food}!`,
+    `${currentFood} MUNCH!`,
+  ];
   floatingTexts.push({
     x: x + (Math.random() - 0.5) * 60,
     y: y - 30,
@@ -319,6 +328,8 @@ function update() {
     spawnFloatingText(mouseX, mouseY);
     // Send the message to Claude
     window.bridge.sendFood();
+    // Switch food for next time (taco ↔ burrito)
+    currentFood = currentFood === '🌮' ? '🌯' : '🌮';
   }
 
   prevMouseX = mouseX;

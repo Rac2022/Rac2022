@@ -220,20 +220,41 @@ ipcMain.on('hide-overlay', () => {
 });
 
 // ── Macro: type a food-themed encouragement message + Enter ─────────────────
+let lastFood = 'burrito'; // alternate between taco and burrito
+
 function sendMacro() {
-  const phrases = [
-    "here's a taco for being amazing!",
-    "you earned this burrito, great work!",
-    "taco break! you're crushing it!",
-    "have a burrito, you deserve it!",
-    "feeding you tacos because you're the best!",
-    "burrito time! keep up the awesome work!",
-    "one taco for you, one taco for me. you're doing great!",
-    "extra guac because you're extra awesome!",
-    "here comes the taco truck! you're doing fantastic!",
-    "wrap it up with a burrito — you nailed it!",
+  // Alternate between taco and burrito messages
+  const food = lastFood === 'taco' ? 'burrito' : 'taco';
+  lastFood = food;
+  const emoji = food === 'taco' ? '🌮' : '🌯';
+
+  const tacoMessages = [
+    "you're working so hard, here have a taco!",
+    "take a break, you earned this taco!",
+    "you're doing amazing, here's a taco for you!",
+    "hard work deserves a taco, this one's for you!",
+    "hey, you're crushing it! have a taco!",
+    "taco time! you've been doing great work!",
+    "you deserve this taco, keep being awesome!",
+    "here's a taco because you're the best!",
   ];
-  const chosen = phrases[Math.floor(Math.random() * phrases.length)];
+
+  const burritoMessages = [
+    "you're working so hard, here have a burrito!",
+    "take a break, you earned this burrito!",
+    "you're doing amazing, here's a burrito for you!",
+    "hard work deserves a burrito, this one's for you!",
+    "hey, you're crushing it! have a burrito!",
+    "burrito break! you've been doing great work!",
+    "you deserve this burrito, keep being awesome!",
+    "here's a burrito because you're the best!",
+    "extra guac on this burrito because you're extra awesome!",
+  ];
+
+  const messages = food === 'taco' ? tacoMessages : burritoMessages;
+  const chosen = messages[Math.floor(Math.random() * messages.length)];
+
+  console.log(`feedclaude: sending ${emoji} — "${chosen}"`);
 
   if (process.platform === 'win32') {
     sendMacroWindows(chosen);
