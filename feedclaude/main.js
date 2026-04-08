@@ -1,9 +1,7 @@
 // ABOUTME: Main Electron process for feedclaude — toss tacos & burritos to encourage Claude Code
-// ABOUTME: Manages tray icon, transparent overlay window, and sends food-themed encouragement via native keystrokes
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen } = require('electron');
+// ABOUTME: Tray icon with feed button — click to send food-themed encouragement to Claude
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, globalShortcut } = require('electron');
 const path = require('path');
-const fs = require('fs');
-const os = require('os');
 const { execFile } = require('child_process');
 
 // ── Win32 FFI (Windows only) ────────────────────────────────────────────────
@@ -20,208 +18,71 @@ if (process.platform === 'win32') {
 }
 
 // ── Globals ─────────────────────────────────────────────────────────────────
-let tray, overlay;
-let overlayReady = false;
-let spawnQueued = false;
+let tray, soundWindow;
+let feedCount = 0;
 
 const VK_CONTROL = 0x11;
 const VK_RETURN  = 0x0D;
 const VK_C       = 0x43;
-const VK_MENU    = 0x12; // Alt
-const VK_TAB     = 0x09;
 const KEYUP      = 0x0002;
 
-/** One Alt+Tab / Cmd+Tab so focus returns to the previously active app after tray click. */
-function refocusPreviousApp() {
-  const delayMs = 80;
-  const run = () => {
-    if (process.platform === 'win32') {
-      if (!keybd_event) return;
-      keybd_event(VK_MENU, 0, 0, 0);
-      keybd_event(VK_TAB, 0, 0, 0);
-      keybd_event(VK_TAB, 0, KEYUP, 0);
-      keybd_event(VK_MENU, 0, KEYUP, 0);
-    } else if (process.platform === 'darwin') {
-      const script = [
-        'tell application "System Events"',
-        '  key down command',
-        '  key code 48', // Tab
-        '  key up command',
-        'end tell',
-      ].join('\n');
-      execFile('osascript', ['-e', script], err => {
-        if (err) {
-          console.warn('refocus previous app (Cmd+Tab) failed:', err.message);
-        }
-      });
-    }
-  };
-  setTimeout(run, delayMs);
-}
-
-/** Create a taco tray icon by drawing on a canvas via data URL. */
+// ── Tray icon ──────────────────────────────────────────────────────────────
 function getTrayIcon() {
-  // 16x16 taco icon as a hand-drawn PNG-compatible pixel art via raw RGBA buffer
   const size = 16;
-  const buf = Buffer.alloc(size * size * 4, 0); // RGBA
-
-  // Draw a simple taco shape: orange/yellow shell + green/red filling
+  const buf = Buffer.alloc(size * size * 4, 0);
   const set = (x, y, r, g, b, a = 255) => {
     if (x < 0 || x >= size || y < 0 || y >= size) return;
     const i = (y * size + x) * 4;
     buf[i] = r; buf[i+1] = g; buf[i+2] = b; buf[i+3] = a;
   };
 
-  // Taco shell (golden arc) - rows 4-13
-  const shell = [
-    // [y, xStart, xEnd]
-    [4,  6, 9],
-    [5,  4, 11],
-    [6,  3, 12],
-    [7,  2, 13],
-    [8,  2, 13],
-    [9,  2, 13],
-    [10, 3, 12],
-    [11, 3, 12],
-    [12, 4, 11],
-    [13, 5, 10],
-  ];
+  const shell = [[4,6,9],[5,4,11],[6,3,12],[7,2,13],[8,2,13],[9,2,13],[10,3,12],[11,3,12],[12,4,11],[13,5,10]];
+  for (const [y, x1, x2] of shell) for (let x = x1; x <= x2; x++) set(x, y, 210, 150, 50);
+  const interior = [[5,5,10],[6,4,11],[7,3,12],[8,3,12],[9,3,12],[10,4,11],[11,4,11],[12,5,10]];
+  for (const [y, x1, x2] of interior) for (let x = x1; x <= x2; x++) set(x, y, 240, 190, 80);
+  const fillings = [[5,5,80,180,80],[5,6,60,160,60],[5,7,80,180,80],[5,8,60,160,60],[5,9,80,180,80],[5,10,60,160,60],[6,5,220,60,50],[6,7,220,60,50],[6,9,220,60,50],[6,11,220,60,50],[6,6,255,220,80],[6,8,255,220,80],[6,10,255,220,80],[7,4,160,90,50],[7,5,150,80,40],[7,6,160,90,50],[7,7,150,80,40],[7,8,160,90,50],[7,9,150,80,40],[7,10,160,90,50],[7,11,150,80,40]];
+  for (const [y, x, r, g, b] of fillings) set(x, y, r, g, b);
 
-  // Draw shell outline (darker orange)
-  for (const [y, x1, x2] of shell) {
-    for (let x = x1; x <= x2; x++) {
-      set(x, y, 210, 150, 50);
-    }
-  }
-
-  // Fill interior (lighter yellow)
-  const interior = [
-    [5,  5, 10],
-    [6,  4, 11],
-    [7,  3, 12],
-    [8,  3, 12],
-    [9,  3, 12],
-    [10, 4, 11],
-    [11, 4, 11],
-    [12, 5, 10],
-  ];
-  for (const [y, x1, x2] of interior) {
-    for (let x = x1; x <= x2; x++) {
-      set(x, y, 240, 190, 80);
-    }
-  }
-
-  // Filling: lettuce (green), meat (brown), tomato (red), cheese (yellow)
-  const fillings = [
-    // Green lettuce - top of filling
-    [5, 5, 80, 180, 80], [5, 6, 60, 160, 60], [5, 7, 80, 180, 80],
-    [5, 8, 60, 160, 60], [5, 9, 80, 180, 80], [5, 10, 60, 160, 60],
-    // Tomato red
-    [6, 5, 220, 60, 50], [6, 7, 220, 60, 50], [6, 9, 220, 60, 50], [6, 11, 220, 60, 50],
-    // Cheese yellow
-    [6, 6, 255, 220, 80], [6, 8, 255, 220, 80], [6, 10, 255, 220, 80],
-    // Meat brown
-    [7, 4, 160, 90, 50], [7, 5, 150, 80, 40], [7, 6, 160, 90, 50],
-    [7, 7, 150, 80, 40], [7, 8, 160, 90, 50], [7, 9, 150, 80, 40],
-    [7, 10, 160, 90, 50], [7, 11, 150, 80, 40],
-  ];
-  for (const [y, x, r, g, b] of fillings) {
-    set(x, y, r, g, b);
-  }
-
-  const img = nativeImage.createFromBuffer(buf, { width: size, height: size });
-  return img;
+  return nativeImage.createFromBuffer(buf, { width: size, height: size });
 }
 
-// ── Overlay window ──────────────────────────────────────────────────────────
-function createOverlay() {
-  const { bounds } = screen.getPrimaryDisplay();
-  overlay = new BrowserWindow({
-    x: bounds.x, y: bounds.y,
-    width: bounds.width, height: bounds.height,
-    transparent: true,
-    frame: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    resizable: false,
-    hasShadow: false,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-    },
+// ── Sound window (hidden, just for audio) ──────────────────────────────────
+function createSoundWindow() {
+  soundWindow = new BrowserWindow({
+    width: 1, height: 1,
+    show: false,
+    webPreferences: { preload: path.join(__dirname, 'preload.js') },
   });
-  overlay.setAlwaysOnTop(true, 'screen-saver');
-  // Let clicks pass through to apps behind the overlay
-  // The overlay tracks mouse position via 'mousemove' forwarding
-  overlay.setIgnoreMouseEvents(true, { forward: true });
-  if (process.platform === 'darwin') {
-    overlay.setVisibleOnAllWorkspaces(true);
-  }
-  overlayReady = false;
-  overlay.loadFile('overlay.html');
-
-  overlay.webContents.on('did-finish-load', () => {
-    overlayReady = true;
-    console.log('feedclaude: overlay ready — click-through enabled, you can interact with apps behind it');
-    if (spawnQueued && overlay) {
-      spawnQueued = false;
-      overlay.webContents.send('spawn-food');
-    }
-  });
-  overlay.on('closed', () => {
-    overlay = null;
-    overlayReady = false;
-    spawnQueued = false;
-    active = false;
-  });
+  soundWindow.loadFile('sound.html');
 }
 
-let active = false;
-
-function toggleOverlay() {
-  console.log('feedclaude: toggleOverlay called, active=' + active);
-  if (active && overlay) {
-    console.log('feedclaude: closing overlay');
-    active = false;
-    overlay.webContents.send('drop-food');
-    overlay.hide();
-    return;
-  }
-  active = true;
-  if (!overlay) createOverlay();
-  console.log('feedclaude: showing overlay — wave your mouse fast!');
-  overlay.show();
-  if (overlayReady) {
-    overlay.webContents.send('spawn-food');
-    // Do NOT refocus — let the overlay stay on top
-  } else {
-    spawnQueued = true;
-  }
-}
-
-// ── IPC ─────────────────────────────────────────────────────────────────────
-ipcMain.on('send-food', () => {
-  console.log('feedclaude: sending food to Claude!');
-  try {
-    sendMacro();
-  } catch (err) {
-    console.warn('sendMacro failed:', err?.message || err);
-  }
-});
-ipcMain.on('hide-overlay', () => {
-  console.log('feedclaude: hide-overlay received');
-  active = false;
-  if (overlay) overlay.hide();
-});
-
-// ── Macro: type a food-themed encouragement message + Enter ─────────────────
-let lastFood = 'burrito'; // alternate between taco and burrito
-
-function sendMacro() {
-  // Alternate between taco and burrito messages
-  const food = lastFood === 'taco' ? 'burrito' : 'taco';
-  lastFood = food;
+// ── Feed Claude! ───────────────────────────────────────────────────────────
+function feedClaude() {
+  feedCount++;
+  const food = feedCount % 2 === 1 ? 'taco' : 'burrito';
   const emoji = food === 'taco' ? '🌮' : '🌯';
 
+  // Play crunch sound
+  if (soundWindow) {
+    soundWindow.webContents.send('play-crunch');
+  }
+
+  // Pick a message and send it
+  const message = pickMessage(food);
+  console.log(`feedclaude: #${feedCount} ${emoji} — "${message}"`);
+
+  if (process.platform === 'win32') {
+    sendMacroWindows(message);
+  } else if (process.platform === 'darwin') {
+    sendMacroMac(message);
+  }
+
+  // Update tray tooltip
+  tray.setToolTip(`Feed Claude — fed ${feedCount} time${feedCount !== 1 ? 's' : ''}! 🌮🌯`);
+}
+
+// ── Messages ───────────────────────────────────────────────────────────────
+function pickMessage(food) {
   const tacoMessages = [
     "you're working so hard, here have a taco!",
     "take a break, you earned this taco!",
@@ -269,23 +130,13 @@ function sendMacro() {
   ];
 
   const messages = food === 'taco' ? tacoMessages : burritoMessages;
-  const chosen = messages[Math.floor(Math.random() * messages.length)];
-
-  console.log(`feedclaude: sending ${emoji} — "${chosen}"`);
-
-  if (process.platform === 'win32') {
-    sendMacroWindows(chosen);
-  } else if (process.platform === 'darwin') {
-    sendMacroMac(chosen);
-  }
+  return messages[Math.floor(Math.random() * messages.length)];
 }
 
+// ── Macro: type message into the focused app ───────────────────────────────
 function sendMacroWindows(text) {
   if (!keybd_event || !VkKeyScanA) return;
-  const tapKey = vk => {
-    keybd_event(vk, 0, 0, 0);
-    keybd_event(vk, 0, KEYUP, 0);
-  };
+  const tapKey = vk => { keybd_event(vk, 0, 0, 0); keybd_event(vk, 0, KEYUP, 0); };
   const tapChar = ch => {
     const packed = VkKeyScanA(ch.charCodeAt(0));
     if (packed === -1) return;
@@ -295,7 +146,6 @@ function sendMacroWindows(text) {
     tapKey(vk);
     if (shiftState & 1) keybd_event(0x10, 0, KEYUP, 0);
   };
-
   keybd_event(VK_CONTROL, 0, 0, 0);
   keybd_event(VK_C, 0, 0, 0);
   keybd_event(VK_C, 0, KEYUP, 0);
@@ -316,28 +166,49 @@ function sendMacroMac(text) {
     '  key code 36',
     'end tell'
   ].join('\n');
-
   execFile('osascript', ['-e', script], err => {
-    if (err) {
-      console.warn('mac macro failed (enable Accessibility for terminal/app):', err.message);
-    }
+    if (err) console.warn('mac macro failed (enable Accessibility for terminal/app):', err.message);
   });
 }
 
 // ── App lifecycle ───────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  createSoundWindow();
+
   tray = new Tray(getTrayIcon());
-  tray.setToolTip('Feed Claude – click to toss a taco or burrito!');
+  tray.setToolTip('Feed Claude – click the taco to send food!');
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: 'Feed Claude! 🌮', click: () => toggleOverlay() },
+      { label: '🌮 Feed a Taco!', click: () => feedClaude() },
+      { label: '🌯 Feed a Burrito!', click: () => feedClaude() },
+      { type: 'separator' },
+      { label: `Shortcut: Ctrl+Shift+F`, enabled: false },
       { type: 'separator' },
       { label: 'Quit', click: () => app.quit() },
     ])
   );
-  // 'click' works on Windows; macOS uses the context menu above
-  tray.on('click', () => toggleOverlay());
-  console.log('feedclaude: tray icon ready — click or right-click the taco in your menu bar!');
+  tray.on('click', () => feedClaude());
+
+  // Global keyboard shortcut: Ctrl+Shift+F to feed Claude from anywhere
+  globalShortcut.register('CommandOrControl+Shift+F', () => {
+    feedClaude();
+  });
+
+  console.log('');
+  console.log('🌮🌯 feedclaude is running!');
+  console.log('');
+  console.log('  How to use:');
+  console.log('  1. Focus your Claude Code terminal');
+  console.log('  2. Press Ctrl+Shift+F (or Cmd+Shift+F) to feed Claude!');
+  console.log('  3. Or click the taco icon in your menu bar');
+  console.log('');
+  console.log('  Each feed sends a taco or burrito message with a crunch sound.');
+  console.log('  Make sure Claude Code is the focused window!');
+  console.log('');
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', e => e.preventDefault());

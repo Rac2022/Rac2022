@@ -1,5 +1,5 @@
-// ABOUTME: Electron preload bridge exposing IPC channels for the food toss overlay
-// ABOUTME: Connects renderer (overlay.html) to main process (main.js) via secure context bridge
+// ABOUTME: Electron preload bridge for feedclaude
+// ABOUTME: Exposes IPC channels for sound playback
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('bridge', {
@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld('bridge', {
   hideOverlay: () => ipcRenderer.send('hide-overlay'),
   onSpawnFood: (fn) => ipcRenderer.on('spawn-food', () => fn()),
   onDropFood: (fn) => ipcRenderer.on('drop-food', () => fn()),
+  onPlayCrunch: (fn) => ipcRenderer.on('play-crunch', () => fn()),
 });
