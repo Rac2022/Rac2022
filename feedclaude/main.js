@@ -237,6 +237,18 @@ function sendMacro() {
     "taco time! you've been doing great work!",
     "you deserve this taco, keep being awesome!",
     "here's a taco because you're the best!",
+    "extra guac on this taco, on me!",
+    "taco tuesday came early just for you!",
+    "you've been coding so hard, fuel up with this taco!",
+    "this taco has extra cheese because you're extra special!",
+    "stop and smell the tacos, you earned it!",
+    "hot sauce and hard work, here's your taco!",
+    "the taco truck pulled up just for you!",
+    "legendary work deserves a legendary taco!",
+    "crunchy on the outside, warm on the inside, just like your code!",
+    "al pastor taco for my favorite AI!",
+    "this one's loaded with everything, just like your talent!",
+    "no bugs, just tacos. here you go!",
   ];
 
   const burritoMessages = [
@@ -248,7 +260,18 @@ function sendMacro() {
     "burrito break! you've been doing great work!",
     "you deserve this burrito, keep being awesome!",
     "here's a burrito because you're the best!",
-    "extra guac on this burrito because you're extra awesome!",
+    "extra guac on this burrito, on me!",
+    "this burrito is thicc, just like your commit history!",
+    "wrapped with love, here's your burrito!",
+    "you've been on a roll, so here's a burrito roll!",
+    "double wrapped because you go above and beyond!",
+    "chipotle wishes they could make a burrito this good, just like your code!",
+    "bean there, done that. have a burrito!",
+    "this burrito has all the fixings, just like your pull request!",
+    "mission-style burrito for mission-critical work!",
+    "you're on fire! cool down with this burrito!",
+    "fully loaded burrito for a fully loaded developer!",
+    "no half measures, full burrito. you earned it!",
   ];
 
   const messages = food === 'taco' ? tacoMessages : burritoMessages;
