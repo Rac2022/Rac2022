@@ -156,53 +156,68 @@ function createOverlay() {
   }
   overlayReady = false;
   overlay.loadFile('overlay.html');
+
+  // Prevent the window from closing/hiding itself
+  overlay.on('blur', () => {
+    if (overlay && active) {
+      console.log('feedclaude: overlay blurred, re-showing');
+      overlay.show();
+    }
+  });
+
   overlay.webContents.on('did-finish-load', () => {
     overlayReady = true;
     console.log('feedclaude: overlay ready');
-    if (spawnQueued && overlay && overlay.isVisible()) {
+    if (spawnQueued && overlay) {
       spawnQueued = false;
       overlay.webContents.send('spawn-food');
-      refocusPreviousApp();
     }
   });
   overlay.on('closed', () => {
     overlay = null;
     overlayReady = false;
     spawnQueued = false;
+    active = false;
   });
 }
 
+let active = false;
+
 function toggleOverlay() {
-  console.log('feedclaude: toggleOverlay called');
-  if (overlay && overlay.isVisible()) {
-    console.log('feedclaude: hiding overlay');
+  console.log('feedclaude: toggleOverlay called, active=' + active);
+  if (active && overlay) {
+    console.log('feedclaude: closing overlay');
+    active = false;
     overlay.webContents.send('drop-food');
     overlay.hide();
     return;
   }
+  active = true;
   if (!overlay) createOverlay();
-  console.log('feedclaude: showing overlay');
+  console.log('feedclaude: showing overlay — wave your mouse fast!');
   overlay.show();
-  overlay.focus();
   if (overlayReady) {
-    console.log('feedclaude: spawning food — wave your mouse fast!');
     overlay.webContents.send('spawn-food');
-    refocusPreviousApp();
+    // Do NOT refocus — let the overlay stay on top
   } else {
-    console.log('feedclaude: overlay loading, queuing spawn');
     spawnQueued = true;
   }
 }
 
 // ── IPC ─────────────────────────────────────────────────────────────────────
 ipcMain.on('send-food', () => {
+  console.log('feedclaude: sending food to Claude!');
   try {
     sendMacro();
   } catch (err) {
     console.warn('sendMacro failed:', err?.message || err);
   }
 });
-ipcMain.on('hide-overlay', () => { if (overlay) overlay.hide(); });
+ipcMain.on('hide-overlay', () => {
+  console.log('feedclaude: hide-overlay received');
+  active = false;
+  if (overlay) overlay.hide();
+});
 
 // ── Macro: type a food-themed encouragement message + Enter ─────────────────
 function sendMacro() {
