@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html><body>
+<script>
+// ABOUTME: Hidden window that just plays crunch/munch sounds when triggered
+
+function playCrunchSound() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ac.currentTime;
+    const vol = 0.6;
+
+    // === Big crunch bite ===
+    const crunchBuf = ac.createBuffer(1, ac.sampleRate * 0.15, ac.sampleRate);
+    const crunchData = crunchBuf.getChannelData(0);
+    for (let i = 0; i < crunchData.length; i++) {
+      const t = i / crunchData.length;
+      crunchData[i] = (Math.random() * 2 - 1) * (1 - t) * 0.8;
+    }
+    const crunch1 = ac.createBufferSource();
+    crunch1.buffer = crunchBuf;
+    const crunchGain = ac.createGain();
+    crunchGain.gain.setValueAtTime(vol * 0.6, now);
+    crunchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    const crunchFilter = ac.createBiquadFilter();
+    crunchFilter.type = 'bandpass';
+    crunchFilter.frequency.value = 2500;
+    crunchFilter.Q.value = 1.5;
+    crunch1.connect(crunchFilter);
+    crunchFilter.connect(crunchGain);
+    crunchGain.connect(ac.destination);
+    crunch1.start(now);
+
+    // === Second crunch ===
+    const crunch2 = ac.createBufferSource();
+    crunch2.buffer = crunchBuf;
+    const crunchGain2 = ac.createGain();
+    crunchGain2.gain.setValueAtTime(vol * 0.4, now + 0.1);
+    crunchGain2.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    const crunchFilter2 = ac.createBiquadFilter();
+    crunchFilter2.type = 'bandpass';
+    crunchFilter2.frequency.value = 3500;
+    crunchFilter2.Q.value = 1.2;
+    crunch2.connect(crunchFilter2);
+    crunchFilter2.connect(crunchGain2);
+    crunchGain2.connect(ac.destination);
+    crunch2.start(now + 0.1);
+
+    // === Low satisfying bite thump ===
+    const thump = ac.createOscillator();
+    const thumpGain = ac.createGain();
+    thump.type = 'sine';
+    thump.frequency.setValueAtTime(150, now);
+    thump.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+    thumpGain.gain.setValueAtTime(vol * 0.5, now);
+    thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    thump.connect(thumpGain);
+    thumpGain.connect(ac.destination);
+    thump.start(now);
+    thump.stop(now + 0.3);
+
+    // === Happy "nom nom" rising tone ===
+    const nom = ac.createOscillator();
+    const nomGain = ac.createGain();
+    nom.type = 'triangle';
+    nom.frequency.setValueAtTime(300, now + 0.15);
+    nom.frequency.exponentialRampToValueAtTime(600, now + 0.3);
+    nom.frequency.exponentialRampToValueAtTime(900, now + 0.45);
+    nomGain.gain.setValueAtTime(vol * 0.25, now + 0.15);
+    nomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    nom.connect(nomGain);
+    nomGain.connect(ac.destination);
+    nom.start(now + 0.15);
+    nom.stop(now + 0.55);
+  } catch (e) {
+    console.warn('sound failed:', e);
+  }
+}
+
+window.bridge.onPlayCrunch(() => {
+  playCrunchSound();
+});
+</script>
+</body></html>
