@@ -150,24 +150,18 @@ function createOverlay() {
     },
   });
   overlay.setAlwaysOnTop(true, 'screen-saver');
+  // Let clicks pass through to apps behind the overlay
+  // The overlay tracks mouse position via 'mousemove' forwarding
+  overlay.setIgnoreMouseEvents(true, { forward: true });
   if (process.platform === 'darwin') {
-    overlay.setIgnoreMouseEvents(false);
     overlay.setVisibleOnAllWorkspaces(true);
   }
   overlayReady = false;
   overlay.loadFile('overlay.html');
 
-  // Prevent the window from closing/hiding itself
-  overlay.on('blur', () => {
-    if (overlay && active) {
-      console.log('feedclaude: overlay blurred, re-showing');
-      overlay.show();
-    }
-  });
-
   overlay.webContents.on('did-finish-load', () => {
     overlayReady = true;
-    console.log('feedclaude: overlay ready');
+    console.log('feedclaude: overlay ready — click-through enabled, you can interact with apps behind it');
     if (spawnQueued && overlay) {
       spawnQueued = false;
       overlay.webContents.send('spawn-food');

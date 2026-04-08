@@ -44,20 +44,9 @@ let currentFood = FOODS[0];
 
 document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
 
-// ESC key to dismiss — no accidental click dismissal
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && active) {
-    active = false;
-    window.bridge.hideOverlay();
-  }
-});
+// Close via tray icon toggle (clicks pass through to apps behind)
 
-// Click does NOT dismiss — just spawns a little burst for fun
-document.addEventListener('mousedown', () => {
-  if (active) {
-    for (let i = 0; i < 8; i++) spawnParticle(mouseX, mouseY, false);
-  }
-});
+// Clicks pass through to apps behind — no click handler needed
 
 // ── Food-colored particles ────────────────────────────────────────────────
 let particles = [];
@@ -397,7 +386,7 @@ function draw() {
   ctx.font = '14px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-  ctx.fillText('wave fast to feed  •  press ESC to close', W / 2, H - 30);
+  ctx.fillText('wave fast to feed  •  click through to use apps  •  tray icon to close', W / 2, H - 30);
   ctx.restore();
 }
 
