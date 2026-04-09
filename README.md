@@ -10,6 +10,17 @@ A local MVP web app for collecting, scoring, filtering, and reviewing early tren
 - **Prisma** with **SQLite**
 - No auth, no external APIs
 
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Dashboard — signal cards with inline status controls, sticky filters |
+| `/signals/new` | Add a new trend signal with scores |
+| `/signals/[id]` | Signal detail — score breakdown, explanation, notes editor |
+| `/digest` | Weekly digest — strongest, niche, easy-money, and crowded opportunities |
+| `/review` | Analytics — charts for score distribution, source types, status breakdown |
+| `/import` | CSV bulk import for trend signals |
+
 ## Getting Started
 
 ### Prerequisites
@@ -52,11 +63,26 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ```
 src/
-├── app/            # Next.js App Router pages and layouts
-├── components/     # Reusable React components
-├── lib/            # Utilities and shared logic (Prisma client, helpers)
-└── generated/      # Auto-generated Prisma client (gitignored)
+├── app/
+│   ├── page.tsx              # Dashboard
+│   ├── digest/               # Weekly digest page
+│   ├── review/               # Analytics page
+│   ├── import/               # CSV import page
+│   └── signals/
+│       ├── new/              # Add signal form
+│       └── [id]/             # Signal detail + notes + status
+├── components/
+│   ├── Charts.tsx            # Score, source type, status charts
+│   ├── InlineStatusControl   # Dashboard status toggle
+│   ├── ScoreExplanation      # Weighted score formula display
+│   └── ...                   # Nav, SignalCard, Filters, etc.
+├── lib/
+│   ├── prisma.ts             # Prisma client singleton
+│   ├── scoring.ts            # Score weights, helpers, types
+│   └── actions.ts            # Shared server actions
+└── generated/                # Auto-generated Prisma client (gitignored)
 prisma/
-├── schema.prisma   # Database schema
-└── dev.db          # SQLite database (gitignored)
+├── schema.prisma
+├── seed.ts
+└── dev.db                    # SQLite database (gitignored)
 ```

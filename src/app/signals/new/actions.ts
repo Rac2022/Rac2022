@@ -34,6 +34,7 @@ export async function createSignal(
       url: (formData.get("url") as string) || "",
       summary: summary.trim(),
       tags: (formData.get("tags") as string) || "",
+      notes: (formData.get("notes") as string) || "",
       ...scoreFields,
       overallScore,
     },

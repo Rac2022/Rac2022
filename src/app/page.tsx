@@ -23,15 +23,9 @@ export default async function DashboardPage({
   const params = await searchParams;
   const where: Prisma.TrendSignalWhereInput = {};
 
-  if (params.status) {
-    where.status = params.status;
-  }
-  if (params.sourceType) {
-    where.sourceType = params.sourceType;
-  }
-  if (params.minScore) {
-    where.overallScore = { gte: Number(params.minScore) };
-  }
+  if (params.status) where.status = params.status;
+  if (params.sourceType) where.sourceType = params.sourceType;
+  if (params.minScore) where.overallScore = { gte: Number(params.minScore) };
   if (params.q) {
     const q = params.q;
     where.OR = [
@@ -41,35 +35,34 @@ export default async function DashboardPage({
     ];
   }
 
-  const signals = await prisma.trendSignal.findMany({
-    where,
-    orderBy: { overallScore: "desc" },
-  });
-
-  const totalCount = await prisma.trendSignal.count();
+  const [signals, totalCount] = await Promise.all([
+    prisma.trendSignal.findMany({
+      where,
+      orderBy: { overallScore: "desc" },
+    }),
+    prisma.trendSignal.count(),
+  ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-[var(--muted)]">
-            {signals.length} signal{signals.length !== 1 ? "s" : ""}
-            {signals.length !== totalCount ? ` of ${totalCount}` : ""}
+          <p className="mt-0.5 text-sm text-[var(--muted)]">
+            {signals.length === totalCount
+              ? `${totalCount} signal${totalCount !== 1 ? "s" : ""}`
+              : `${signals.length} of ${totalCount} signals`}
           </p>
         </div>
-        <Link
-          href="/signals/new"
-          className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)]"
-        >
-          Add Signal
-        </Link>
       </div>
 
+      {/* Sticky filters */}
       <Suspense fallback={null}>
         <SignalFilters />
       </Suspense>
 
+      {/* Signal list */}
       {signals.length === 0 ? (
         <EmptyState
           title="No signals found"
@@ -90,7 +83,7 @@ export default async function DashboardPage({
           }
         />
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-2 pt-2">
           {signals.map((signal) => (
             <SignalCard key={signal.id} signal={signal} />
           ))}

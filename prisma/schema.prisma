@@ -15,6 +15,7 @@ model TrendSignal {
   sourceType            String   @default("other")
   url                   String   @default("")
   summary               String
+  notes                 String   @default("")
   tags                  String   @default("")
   searchVolumeScore     Int      @default(0)
   socialVelocityScore   Int      @default(0)

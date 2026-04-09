@@ -8,11 +8,13 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--card-border)] px-6 py-16 text-center">
-      <div className="mb-2 text-4xl opacity-30">~</div>
-      <h3 className="text-lg font-medium">{title}</h3>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--card-border)] px-6 py-20 text-center">
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--card)]">
+        <span className="text-lg text-[var(--muted)]">?</span>
+      </div>
+      <h3 className="text-base font-semibold">{title}</h3>
       <p className="mt-1 max-w-sm text-sm text-[var(--muted)]">{description}</p>
-      {action && <div className="mt-4">{action}</div>}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }

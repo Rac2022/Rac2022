@@ -12,6 +12,7 @@ const signals = [
     summary:
       "Creators are showcasing AI tools that generate full outfit recommendations based on body type, occasion, and existing wardrobe photos. Engagement rates are 3-5x typical fashion content.",
     tags: "ai,fashion,personalization,saas",
+    notes: "Tested two tools — StyleAI and DressX. StyleAI has better UX but DressX has API access. Worth building a comparison post.",
     searchVolumeScore: 72,
     socialVelocityScore: 88,
     saturationScore: 25,
@@ -72,6 +73,7 @@ const signals = [
     summary:
       "Podcasters are using voice cloning to produce multilingual versions of their shows. Several tools have emerged but no clear market leader yet.",
     tags: "ai,audio,podcasting,localization",
+    notes: "ElevenLabs and PlayHT both offer this. Key differentiator would be auto-translation pipeline, not just cloning.",
     searchVolumeScore: 68,
     socialVelocityScore: 78,
     saturationScore: 30,
@@ -117,6 +119,7 @@ const signals = [
     summary:
       "Paid private communities (50-500 members) around specific niches are outperforming broad platforms. Tools to manage these are underbuilt.",
     tags: "community,creator-economy,saas,membership",
+    notes: "Geneva and Heartbeat are early movers. Big gap: no one has combined community management + paywall + content drip well.",
     searchVolumeScore: 58,
     socialVelocityScore: 72,
     saturationScore: 35,
@@ -147,6 +150,7 @@ const signals = [
     summary:
       "Tools that generate dynamic campaign narratives, NPC dialogue, and encounter balancing using LLMs. Several open-source projects gaining stars rapidly.",
     tags: "ai,gaming,tabletop,entertainment",
+    notes: "r/DnD posts about AI DMs regularly hit front page. Open-source project 'LLM-DM' has 2k stars in 3 months.",
     searchVolumeScore: 55,
     socialVelocityScore: 80,
     saturationScore: 20,

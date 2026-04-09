@@ -84,6 +84,15 @@ export function SignalForm() {
           />
         </Field>
 
+        <Field label="Notes">
+          <textarea
+            name="notes"
+            rows={2}
+            className="input-field resize-none"
+            placeholder="Private notes, research links, follow-ups..."
+          />
+        </Field>
+
         <div className="space-y-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <h3 className="text-sm font-medium">Scores (0-100)</h3>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
