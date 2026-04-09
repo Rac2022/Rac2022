@@ -28,6 +28,9 @@ npx prisma generate
 # Create / sync the SQLite database
 npx prisma db push
 
+# Seed with sample data
+npx tsx prisma/seed.ts
+
 # Start the dev server
 npm run dev
 ```
@@ -43,6 +46,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 | `npx prisma studio` | Browse database in a GUI |
 | `npx prisma db push` | Push schema changes to the database |
 | `npx prisma generate` | Regenerate the Prisma client |
+| `npx tsx prisma/seed.ts` | Seed the database with sample signals |
 
 ## Project Structure
 

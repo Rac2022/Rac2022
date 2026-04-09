@@ -20,7 +20,14 @@ export function SignalForm() {
   return (
     <form action={formAction} className="space-y-6">
       {state?.error && (
-        <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger)]/10 px-4 py-3 text-sm text-[var(--danger)]">
+        <div
+          className="rounded-lg px-4 py-3 text-sm"
+          style={{
+            color: "var(--danger)",
+            border: "1px solid var(--danger)",
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+          }}
+        >
           {state.error}
         </div>
       )}
@@ -104,22 +111,6 @@ export function SignalForm() {
         </button>
       </fieldset>
 
-      <style>{`
-        .input-field {
-          width: 100%;
-          border-radius: 0.5rem;
-          border: 1px solid var(--card-border);
-          background: var(--card);
-          padding: 0.5rem 0.75rem;
-          font-size: 0.875rem;
-          color: var(--foreground);
-        }
-        .input-field::placeholder { color: var(--muted); }
-        .input-field:focus {
-          border-color: var(--accent);
-          outline: none;
-        }
-      `}</style>
     </form>
   );
 }
