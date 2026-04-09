@@ -1,14 +1,101 @@
-export default function Home() {
+import { Suspense } from "react";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { SignalCard } from "@/components/SignalCard";
+import { SignalFilters } from "@/components/SignalFilters";
+import { EmptyState } from "@/components/EmptyState";
+import type { Prisma } from "@/generated/prisma/client";
+
+export const dynamic = "force-dynamic";
+
+type SearchParams = Promise<{
+  status?: string;
+  sourceType?: string;
+  minScore?: string;
+  q?: string;
+}>;
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const params = await searchParams;
+  const where: Prisma.TrendSignalWhereInput = {};
+
+  if (params.status) {
+    where.status = params.status;
+  }
+  if (params.sourceType) {
+    where.sourceType = params.sourceType;
+  }
+  if (params.minScore) {
+    where.overallScore = { gte: Number(params.minScore) };
+  }
+  if (params.q) {
+    const q = params.q;
+    where.OR = [
+      { title: { contains: q } },
+      { tags: { contains: q } },
+      { summary: { contains: q } },
+    ];
+  }
+
+  const signals = await prisma.trendSignal.findMany({
+    where,
+    orderBy: { overallScore: "desc" },
+  });
+
+  const totalCount = await prisma.trendSignal.count();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
-          Trend Radar
-        </h1>
-        <p className="text-[var(--muted)] text-lg max-w-md">
-          Collect, score, and review early trend signals for business opportunities.
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-[var(--muted)]">
+            {signals.length} signal{signals.length !== 1 ? "s" : ""}
+            {signals.length !== totalCount ? ` of ${totalCount}` : ""}
+          </p>
+        </div>
+        <Link
+          href="/signals/new"
+          className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)]"
+        >
+          Add Signal
+        </Link>
       </div>
-    </main>
+
+      <Suspense fallback={null}>
+        <SignalFilters />
+      </Suspense>
+
+      {signals.length === 0 ? (
+        <EmptyState
+          title="No signals found"
+          description={
+            totalCount === 0
+              ? "Add your first trend signal to get started."
+              : "Try adjusting your filters."
+          }
+          action={
+            totalCount === 0 ? (
+              <Link
+                href="/signals/new"
+                className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white"
+              >
+                Add Signal
+              </Link>
+            ) : undefined
+          }
+        />
+      ) : (
+        <div className="grid gap-3">
+          {signals.map((signal) => (
+            <SignalCard key={signal.id} signal={signal} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

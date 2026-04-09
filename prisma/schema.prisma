@@ -8,14 +8,21 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model Signal {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  source      String   @default("")
-  category    String   @default("general")
-  score       Int      @default(0)
-  status      String   @default("new")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model TrendSignal {
+  id                    String   @id @default(cuid())
+  title                 String
+  source                String
+  sourceType            String   @default("other")
+  url                   String   @default("")
+  summary               String
+  tags                  String   @default("")
+  searchVolumeScore     Int      @default(0)
+  socialVelocityScore   Int      @default(0)
+  saturationScore       Int      @default(0)
+  monetizationEaseScore Int      @default(0)
+  noveltyScore          Int      @default(0)
+  overallScore          Float    @default(0)
+  status                String   @default("new")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
