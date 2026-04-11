@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { createSignal } from "./actions";
-import { SOURCE_TYPE_OPTIONS, SOURCE_TYPE_LABELS } from "@/lib/scoring";
+import Link from "next/link";
+import { SOURCE_TYPE_OPTIONS, SOURCE_TYPE_LABELS, STATUS_OPTIONS, STATUS_CONFIG } from "@/lib/scoring";
 
 const SCORE_FIELDS = [
   { name: "noveltyScore", label: "Novelty", weight: "25%" },
@@ -12,10 +12,39 @@ const SCORE_FIELDS = [
   { name: "saturationScore", label: "Saturation", weight: "10% inverse" },
 ] as const;
 
+export type SignalFormValues = {
+  title: string;
+  source: string;
+  sourceType: string;
+  url: string;
+  summary: string;
+  tags: string;
+  notes: string;
+  status: string;
+  noveltyScore: number;
+  socialVelocityScore: number;
+  searchVolumeScore: number;
+  monetizationEaseScore: number;
+  saturationScore: number;
+};
+
 type FormState = { error?: string } | null;
 
-export function SignalForm() {
-  const [state, formAction, isPending] = useActionState<FormState, FormData>(createSignal, null);
+type Action = (prev: FormState, formData: FormData) => Promise<FormState> | FormState;
+
+export function SignalForm({
+  action,
+  initialValues,
+  submitLabel = "Save Signal",
+  cancelHref,
+}: {
+  action: Action;
+  initialValues?: Partial<SignalFormValues>;
+  submitLabel?: string;
+  cancelHref?: string;
+}) {
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(action, null);
+  const showStatus = initialValues?.status !== undefined;
 
   return (
     <form action={formAction} className="space-y-6">
@@ -38,6 +67,7 @@ export function SignalForm() {
             name="title"
             required
             className="input-field"
+            defaultValue={initialValues?.title}
             placeholder="e.g. AI-Powered Personal Stylists"
           />
         </Field>
@@ -48,11 +78,16 @@ export function SignalForm() {
               name="source"
               required
               className="input-field"
+              defaultValue={initialValues?.source}
               placeholder="e.g. TikTok, Hacker News"
             />
           </Field>
           <Field label="Source Type">
-            <select name="sourceType" className="input-field" defaultValue="other">
+            <select
+              name="sourceType"
+              className="input-field"
+              defaultValue={initialValues?.sourceType ?? "other"}
+            >
               {SOURCE_TYPE_OPTIONS.map((s) => (
                 <option key={s} value={s}>
                   {SOURCE_TYPE_LABELS[s]}
@@ -63,7 +98,13 @@ export function SignalForm() {
         </div>
 
         <Field label="URL">
-          <input name="url" type="url" className="input-field" placeholder="https://..." />
+          <input
+            name="url"
+            type="url"
+            className="input-field"
+            defaultValue={initialValues?.url}
+            placeholder="https://..."
+          />
         </Field>
 
         <Field label="Summary" required>
@@ -72,6 +113,7 @@ export function SignalForm() {
             required
             rows={3}
             className="input-field resize-none"
+            defaultValue={initialValues?.summary}
             placeholder="Describe the trend signal and why it matters..."
           />
         </Field>
@@ -80,6 +122,7 @@ export function SignalForm() {
           <input
             name="tags"
             className="input-field"
+            defaultValue={initialValues?.tags}
             placeholder="comma-separated: ai, saas, health"
           />
         </Field>
@@ -89,9 +132,22 @@ export function SignalForm() {
             name="notes"
             rows={2}
             className="input-field resize-none"
+            defaultValue={initialValues?.notes}
             placeholder="Private notes, research links, follow-ups..."
           />
         </Field>
+
+        {showStatus && (
+          <Field label="Status">
+            <select name="status" className="input-field" defaultValue={initialValues?.status}>
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_CONFIG[s].label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
 
         <div className="space-y-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <h3 className="text-sm font-medium">Scores (0-100)</h3>
@@ -103,7 +159,7 @@ export function SignalForm() {
                   type="number"
                   min={0}
                   max={100}
-                  defaultValue={50}
+                  defaultValue={initialValues?.[f.name] ?? 50}
                   className="input-field"
                 />
               </Field>
@@ -111,15 +167,24 @@ export function SignalForm() {
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-50"
-        >
-          {isPending ? "Saving..." : "Save Signal"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={isPending}
+            className="flex-1 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-50"
+          >
+            {isPending ? "Saving..." : submitLabel}
+          </button>
+          {cancelHref && (
+            <Link
+              href={cancelHref}
+              className="rounded-lg border border-[var(--card-border)] px-4 py-2.5 text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+            >
+              Cancel
+            </Link>
+          )}
+        </div>
       </fieldset>
-
     </form>
   );
 }

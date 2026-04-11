@@ -13,7 +13,17 @@ type SearchParams = Promise<{
   sourceType?: string;
   minScore?: string;
   q?: string;
+  sort?: string;
 }>;
+
+const SORT_MAP: Record<string, Prisma.TrendSignalOrderByWithRelationInput> = {
+  "score-desc": { overallScore: "desc" },
+  "score-asc": { overallScore: "asc" },
+  "date-desc": { createdAt: "desc" },
+  "date-asc": { createdAt: "asc" },
+  "novelty-desc": { noveltyScore: "desc" },
+  "monetization-desc": { monetizationEaseScore: "desc" },
+};
 
 export default async function DashboardPage({
   searchParams,
@@ -35,17 +45,15 @@ export default async function DashboardPage({
     ];
   }
 
+  const orderBy = SORT_MAP[params.sort ?? "score-desc"] ?? SORT_MAP["score-desc"];
+
   const [signals, totalCount] = await Promise.all([
-    prisma.trendSignal.findMany({
-      where,
-      orderBy: { overallScore: "desc" },
-    }),
+    prisma.trendSignal.findMany({ where, orderBy }),
     prisma.trendSignal.count(),
   ]);
 
   return (
     <div className="space-y-2">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
@@ -57,12 +65,10 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      {/* Sticky filters */}
       <Suspense fallback={null}>
         <SignalFilters />
       </Suspense>
 
-      {/* Signal list */}
       {signals.length === 0 ? (
         <EmptyState
           title="No signals found"

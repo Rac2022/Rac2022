@@ -13,6 +13,7 @@ import {
 } from "@/lib/scoring";
 import { StatusUpdater } from "./status-updater";
 import { NotesEditor } from "./notes-editor";
+import { DeleteButton } from "./delete-button";
 
 export const dynamic = "force-dynamic";
 
@@ -34,12 +35,23 @@ export default async function SignalDetailPage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-      >
-        &larr; Back to dashboard
-      </Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+        >
+          &larr; Back to dashboard
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/signals/${signal.id}/edit`}
+            className="rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-xs font-medium text-[var(--muted-foreground)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+          >
+            Edit
+          </Link>
+          <DeleteButton signalId={signal.id} title={signal.title} />
+        </div>
+      </div>
 
       {/* Main card */}
       <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 space-y-6">

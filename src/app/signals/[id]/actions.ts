@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
@@ -32,4 +33,16 @@ export async function updateNotes(_prev: unknown, formData: FormData) {
 
   revalidatePath(`/signals/${id}`);
   return { saved: true };
+}
+
+export async function deleteSignal(formData: FormData) {
+  const id = formData.get("id") as string;
+  if (!id) return;
+
+  await prisma.trendSignal.delete({ where: { id } });
+
+  revalidatePath("/");
+  revalidatePath("/digest");
+  revalidatePath("/review");
+  redirect("/");
 }
