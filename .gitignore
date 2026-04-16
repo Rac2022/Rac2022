@@ -3,3 +3,7 @@ node_modules/
 out/
 *.tsbuildinfo
 next-env.d.ts
+data/*.db
+data/*.db-journal
+.env
+.env.local
