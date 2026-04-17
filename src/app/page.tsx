@@ -4,8 +4,9 @@ import { TopStoriesStrip } from "@/components/TopStoriesStrip";
 import { Section } from "@/components/Section";
 import { Briefs } from "@/components/Briefs";
 import { EndOfEdition } from "@/components/EndOfEdition";
-import { currentEditionKind, loadLatestEdition } from "@/lib/edition";
+import { loadLatestEdition } from "@/lib/edition";
 import { sampleEdition } from "@/lib/sampleEdition";
+import { currentEditionKind } from "@/lib/time";
 
 // Re-render on each request for now. Swap to ISR once the edition generator
 // runs on a schedule.

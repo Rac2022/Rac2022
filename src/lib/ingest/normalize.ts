@@ -37,6 +37,18 @@ export function canonicalizeUrl(raw: string): string {
 }
 
 /**
+ * Extract the lowercased, www-stripped hostname from a URL.
+ * Returns "" when the input isn't a valid URL.
+ */
+export function hostnameOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+/**
  * Collapse whitespace and strip HTML tags from short RSS fields.
  * Good enough for titles and short summaries; do not use on article bodies.
  */

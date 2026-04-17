@@ -1,5 +1,6 @@
 import { PREFERENCES } from "@/config/preferences";
 import type { DraftCluster } from "./cluster";
+import { hostnameOf } from "./ingest/normalize";
 
 export const RANKING = {
   /** Half-life of the recency decay, in hours. */
@@ -8,18 +9,9 @@ export const RANKING = {
   avoidPenalty: 0.6,
 };
 
-function hostnameOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
-  } catch {
-    return "";
-  }
-}
-
-function ageHours(iso: string | null, now: Date): number {
-  if (!iso) return 48;
+function ageHours(iso: string, now: Date): number {
   const t = Date.parse(iso);
-  if (Number.isNaN(t)) return 48;
+  if (Number.isNaN(t)) return 0;
   return Math.max(0, (now.getTime() - t) / 3_600_000);
 }
 
@@ -28,17 +20,20 @@ function hasAvoidTerms(cluster: DraftCluster): boolean {
   if (avoid.length === 0) return false;
   const haystack = [
     cluster.title,
-    cluster.primary.summary ?? "",
-    ...cluster.members.map((m) => m.title),
+    cluster.primaryArticle.summary ?? "",
+    ...cluster.articles.map((m) => m.title),
   ]
     .join(" ")
     .toLowerCase();
   return avoid.some((t) => haystack.includes(t.toLowerCase()));
 }
 
+/**
+ * A cluster plus the scalar importance score and its raw signal components.
+ * The signals are preserved so ranking behavior is easy to log and tune.
+ */
 export interface RankedCluster extends DraftCluster {
   importance: number;
-  /** Kept for debugging/logging. */
   signals: {
     sourceCount: number;
     sourceDiversity: number;
@@ -56,11 +51,12 @@ export interface RankedCluster extends DraftCluster {
  * All inputs are plain numbers, so the result is easy to log and tune.
  */
 export function scoreCluster(cluster: DraftCluster, now = new Date()): RankedCluster {
-  const sourceCount = cluster.members.length;
-  const hosts = new Set(cluster.members.map((m) => hostnameOf(m.canonicalUrl)));
+  const sourceCount = cluster.articles.length;
+  const hosts = new Set(cluster.articles.map((a) => hostnameOf(a.canonicalUrl)));
   const sourceDiversity = hosts.size;
 
-  const primaryAge = ageHours(cluster.primary.publishedAt, now);
+  const primary = cluster.primaryArticle;
+  const primaryAge = ageHours(primary.publishedAt ?? primary.ingestedAt, now);
   const recency = Math.pow(0.5, primaryAge / RANKING.recencyHalfLifeHours);
 
   const sectionWeight = PREFERENCES.sectionWeights[cluster.section] ?? 1;

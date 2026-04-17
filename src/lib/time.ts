@@ -1,6 +1,14 @@
 import { PREFERENCES } from "@/config/preferences";
 import type { EditionKind } from "@/types/ledger";
 
+/**
+ * Decide whether "now" is morning or evening.
+ * Before 15:00 local time counts as morning, otherwise evening.
+ */
+export function currentEditionKind(now = new Date()): EditionKind {
+  return now.getHours() < 15 ? "morning" : "evening";
+}
+
 export function editionWindow(kind: EditionKind, now = new Date()) {
   const hours = PREFERENCES.editionWindowHours[kind];
   const end = new Date(now);

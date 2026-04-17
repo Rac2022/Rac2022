@@ -1,15 +1,38 @@
 import type { Section, StoredArticle } from "@/types/ledger";
+import { hostnameOf } from "./ingest/normalize";
 
 /**
- * An in-memory story cluster produced by the clustering step.
- * Persisted later by the edition generator.
+ * A cluster built in memory by the clustering step, before persistence.
+ * Field names mirror StoryCluster (the persisted shape) so the two are
+ * interchangeable in helpers.
  */
 export interface DraftCluster {
-  primary: StoredArticle;
-  members: StoredArticle[];
+  primaryArticle: StoredArticle;
+  /** Every article in the cluster, including the primary. */
+  articles: StoredArticle[];
   section: Section;
   title: string;
 }
+
+/** Tunable thresholds. Kept together at the top of the file for easy tweaking. */
+export const CLUSTERING = {
+  /** Overall pair score >= this collapses the pair into one cluster. */
+  mergeThreshold: 0.45,
+  /** Time proximity bonus decays linearly to 0 at timeWindowHours. */
+  timeWindowHours: 36,
+  maxTimeBonus: 0.08,
+  /** Flat bonus if both articles share a hostname (wire reprints, syndication). */
+  sameHostBonus: 0.05,
+  /**
+   * A token is "distinctive" if it's at least this long. Two distinctive
+   * tokens shared across titles is a strong same-story signal even when
+   * Jaccard overlap is modest.
+   */
+  distinctiveMinLength: 6,
+  /** Applied per distinctive overlap, capped at maxDistinctiveBonus. */
+  distinctiveTokenBonus: 0.12,
+  maxDistinctiveBonus: 0.3,
+};
 
 /**
  * Token-level stopwords. Intentionally small; we're matching short headlines,
@@ -21,7 +44,7 @@ const STOPWORDS = new Set([
   "have", "had", "this", "that", "these", "those", "it", "its", "his", "her",
   "their", "our", "your", "my", "says", "said", "new", "amid", "after",
   "before", "over", "under", "up", "down", "into", "out", "than", "then",
-  "so", "also", "which", "who", "what", "when", "why", "how", "amid",
+  "so", "also", "which", "who", "what", "when", "why", "how",
 ]);
 
 function tokenize(text: string): Set<string> {
@@ -41,12 +64,12 @@ function jaccard(a: Set<string>, b: Set<string>): number {
   return union === 0 ? 0 : intersect / union;
 }
 
-function hostnameOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
-  } catch {
-    return "";
+function distinctiveOverlap(a: Set<string>, b: Set<string>): number {
+  let n = 0;
+  for (const t of a) {
+    if (t.length >= CLUSTERING.distinctiveMinLength && b.has(t)) n += 1;
   }
+  return n;
 }
 
 function hoursBetween(aIso: string | null, bIso: string | null): number {
@@ -55,34 +78,6 @@ function hoursBetween(aIso: string | null, bIso: string | null): number {
   const b = Date.parse(bIso);
   if (Number.isNaN(a) || Number.isNaN(b)) return Number.POSITIVE_INFINITY;
   return Math.abs(a - b) / 3_600_000;
-}
-
-/** Tunable thresholds. Kept together at the top of the file for easy tweaking. */
-export const CLUSTERING = {
-  /** Overall pair score >= this collapses the pair into one cluster. */
-  mergeThreshold: 0.45,
-  /** Time proximity bonus, maxed at maxTimeBonus within timeWindowHours. */
-  timeWindowHours: 36,
-  maxTimeBonus: 0.08,
-  /** Flat bonus if both articles share a hostname (wire reprints, syndication). */
-  sameHostBonus: 0.05,
-  /**
-   * A token is "distinctive" if it's at least this long. Two distinctive
-   * tokens shared across titles is a strong same-story signal even when
-   * Jaccard overlap is modest.
-   */
-  distinctiveMinLength: 6,
-  /** Applied per distinctive overlap, capped at maxDistinctiveBonus. */
-  distinctiveTokenBonus: 0.12,
-  maxDistinctiveBonus: 0.3,
-};
-
-function distinctiveOverlap(a: Set<string>, b: Set<string>): number {
-  let n = 0;
-  for (const t of a) {
-    if (t.length >= CLUSTERING.distinctiveMinLength && b.has(t)) n += 1;
-  }
-  return n;
 }
 
 /**
@@ -110,12 +105,10 @@ function pairScore(
     );
   }
 
-  // Small nudge for same host (wire syndication, reprints).
   if (hostnameOf(a.canonicalUrl) === hostnameOf(b.canonicalUrl)) {
     score += CLUSTERING.sameHostBonus;
   }
 
-  // Time-proximity nudge: decays linearly to 0 at timeWindowHours.
   const dt = hoursBetween(a.publishedAt, b.publishedAt);
   if (dt < CLUSTERING.timeWindowHours) {
     score += CLUSTERING.maxTimeBonus * (1 - dt / CLUSTERING.timeWindowHours);
@@ -124,9 +117,9 @@ function pairScore(
   return score;
 }
 
-/** Union-find helpers. */
+/** Disjoint-set / union-find over small integer indices. */
 class DSU {
-  parent: number[];
+  private parent: number[];
   constructor(n: number) {
     this.parent = Array.from({ length: n }, (_, i) => i);
   }
@@ -147,54 +140,49 @@ class DSU {
 /**
  * Cluster the given articles into story groups.
  *
- * Approach:
- *   1. Partition by section (we only compare within the same section).
- *   2. For each partition, compare all pairs. O(n^2) per partition is fine
- *      for a personal edition (a few hundred items at most).
- *   3. Union-find merges any pair above threshold.
- *   4. For each component, the primary is the earliest-published article,
- *      with article id as a stable tiebreaker.
+ *   1. Partition by section (we only compare within a section).
+ *   2. Within each partition, score every pair of titles.
+ *   3. Union-find merges any pair at or above CLUSTERING.mergeThreshold.
+ *   4. Each component becomes one DraftCluster; the primary article is the
+ *      most recently published (newspaper convention).
+ *
+ * O(n^2) per section. Fine for a personal edition (tens to low hundreds).
  */
 export function clusterArticles(articles: StoredArticle[]): DraftCluster[] {
-  const bySection = new Map<Section, StoredArticle[]>();
-  for (const a of articles) {
-    const list = bySection.get(a.section) ?? [];
-    list.push(a);
-    bySection.set(a.section, list);
-  }
-
+  const sections = groupBy(articles, (a) => a.section);
   const clusters: DraftCluster[] = [];
 
-  for (const [section, items] of bySection) {
-    const n = items.length;
-    if (n === 0) continue;
-    // Titles only. Summaries add noise that hurts short-headline clustering.
+  for (const [section, items] of sections) {
+    if (items.length === 0) continue;
     const titleTokens = items.map((a) => tokenize(a.title));
-    const dsu = new DSU(n);
+    const dsu = new DSU(items.length);
 
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        const s = pairScore(items[i], titleTokens[i], items[j], titleTokens[j]);
-        if (s >= CLUSTERING.mergeThreshold) dsu.union(i, j);
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        if (
+          pairScore(items[i], titleTokens[i], items[j], titleTokens[j]) >=
+          CLUSTERING.mergeThreshold
+        ) {
+          dsu.union(i, j);
+        }
       }
     }
 
-    const groups = new Map<number, number[]>();
-    for (let i = 0; i < n; i++) {
-      const r = dsu.find(i);
-      const g = groups.get(r) ?? [];
-      g.push(i);
-      groups.set(r, g);
+    const components = new Map<number, StoredArticle[]>();
+    for (let i = 0; i < items.length; i++) {
+      const root = dsu.find(i);
+      const bucket = components.get(root) ?? [];
+      bucket.push(items[i]);
+      components.set(root, bucket);
     }
 
-    for (const [, indices] of groups) {
-      const members = indices.map((i) => items[i]);
-      const primary = pickPrimary(members);
+    for (const bucket of components.values()) {
+      const primaryArticle = pickPrimary(bucket);
       clusters.push({
-        primary,
-        members,
+        primaryArticle,
+        articles: bucket,
         section,
-        title: primary.title,
+        title: primaryArticle.title,
       });
     }
   }
@@ -202,11 +190,21 @@ export function clusterArticles(articles: StoredArticle[]): DraftCluster[] {
   return clusters;
 }
 
-function pickPrimary(members: StoredArticle[]): StoredArticle {
-  // Most recent published_at wins. Newspapers lead with the latest update,
-  // not the original break. Fall back to ingested_at, then to id as a stable
-  // tiebreaker.
-  return [...members].sort((a, b) => {
+function groupBy<T, K>(items: T[], key: (t: T) => K): Map<K, T[]> {
+  const out = new Map<K, T[]>();
+  for (const item of items) {
+    const k = key(item);
+    const bucket = out.get(k) ?? [];
+    bucket.push(item);
+    out.set(k, bucket);
+  }
+  return out;
+}
+
+function pickPrimary(articles: StoredArticle[]): StoredArticle {
+  // Newest publish time wins; newspapers lead with the latest update, not
+  // the original break. Fall back to ingestedAt, then to id as a stable tie.
+  return [...articles].sort((a, b) => {
     const ta = Date.parse(a.publishedAt ?? a.ingestedAt);
     const tb = Date.parse(b.publishedAt ?? b.ingestedAt);
     if (ta !== tb) return tb - ta;

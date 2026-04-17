@@ -3,21 +3,13 @@ import { PREFERENCES } from "@/config/preferences";
 import { insertArticle, upsertFeed } from "@/lib/queries";
 import type { NormalizedArticle, Section } from "@/types/ledger";
 import { fetchFeed, type RawFeedItem } from "./rss";
-import { canonicalizeUrl, stripHtml, truncate } from "./normalize";
+import { canonicalizeUrl, hostnameOf, stripHtml, truncate } from "./normalize";
 
 export interface IngestReport {
   feedsProcessed: number;
   itemsSeen: number;
   articlesInserted: number;
   errors: { feed: string; message: string }[];
-}
-
-function hostnameOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
-  } catch {
-    return "";
-  }
 }
 
 function parseDate(item: RawFeedItem): string | null {
