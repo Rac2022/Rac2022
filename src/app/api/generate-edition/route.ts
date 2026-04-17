@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const kindParam = url.searchParams.get("kind");
     const kind: EditionKind | undefined =
       kindParam === "morning" || kindParam === "evening" ? kindParam : undefined;
-    const report = generateEdition(kind);
+    const report = await generateEdition(kind);
     return NextResponse.json({ ok: true, report });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

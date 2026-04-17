@@ -68,3 +68,14 @@ CREATE TABLE IF NOT EXISTS preferences (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+
+-- Cache of AI-generated cluster summaries, keyed by a deterministic
+-- signature of the cluster's member URLs. Lets re-runs of the same
+-- edition skip the API entirely.
+CREATE TABLE IF NOT EXISTS cluster_summaries (
+  signature      TEXT PRIMARY KEY,
+  one_liner      TEXT NOT NULL,
+  why_it_matters TEXT NOT NULL,
+  model          TEXT,
+  created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+);

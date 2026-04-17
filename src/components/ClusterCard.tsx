@@ -8,6 +8,7 @@ interface Props {
 
 export function ClusterCard({ cluster, variant = "default" }: Props) {
   const a = cluster.primaryArticle;
+  const body = cluster.oneLiner ?? a.summary;
   const otherSources = cluster.relatedArticles
     .map((r) => r.sourceName)
     .filter((s, i, arr) => arr.indexOf(s) === i);
@@ -26,9 +27,15 @@ export function ClusterCard({ cluster, variant = "default" }: Props) {
           {cluster.title}
         </a>
       </h3>
-      {variant === "default" && a.summary ? (
+      {variant === "default" && body ? (
         <p className="text-[1.02rem] leading-relaxed text-[color:var(--ink-muted)]">
-          {a.summary}
+          {body}
+        </p>
+      ) : null}
+      {variant === "default" && cluster.whyItMatters ? (
+        <p className="mt-2 italic text-[0.95rem] leading-relaxed text-[color:var(--ink-muted)]">
+          <span className="font-meta not-italic mr-2">Why it matters</span>
+          {cluster.whyItMatters}
         </p>
       ) : null}
       <div className="font-meta mt-2 flex flex-wrap gap-x-3 gap-y-1">

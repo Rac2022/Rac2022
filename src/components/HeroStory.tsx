@@ -3,6 +3,7 @@ import type { StoryCluster } from "@/types/ledger";
 
 export function HeroStory({ cluster }: { cluster: StoryCluster }) {
   const a = cluster.primaryArticle;
+  const body = cluster.oneLiner ?? a.summary;
   const otherSources = cluster.relatedArticles.length;
   return (
     <article className="py-8 rule-bottom">
@@ -12,9 +13,15 @@ export function HeroStory({ cluster }: { cluster: StoryCluster }) {
           {cluster.title}
         </a>
       </h2>
-      {a.summary ? (
+      {body ? (
         <p className="dropcap text-lg md:text-xl leading-relaxed measure">
-          {a.summary}
+          {body}
+        </p>
+      ) : null}
+      {cluster.whyItMatters ? (
+        <p className="mt-4 measure italic text-[color:var(--ink-muted)] leading-relaxed">
+          <span className="font-meta not-italic mr-2">Why it matters</span>
+          {cluster.whyItMatters}
         </p>
       ) : null}
       <div className="font-meta mt-4 flex flex-wrap gap-x-3 gap-y-1">

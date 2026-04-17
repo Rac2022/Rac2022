@@ -277,3 +277,40 @@ export function getEditionClusters(editionId: number): StoryCluster[] {
     };
   });
 }
+
+// ---------- summary cache ----------
+
+export interface CachedSummary {
+  oneLiner: string;
+  whyItMatters: string;
+}
+
+export function getCachedSummary(signature: string): CachedSummary | null {
+  const row = getDb()
+    .prepare(
+      `SELECT one_liner, why_it_matters FROM cluster_summaries WHERE signature = ?`,
+    )
+    .get(signature) as
+    | { one_liner: string; why_it_matters: string }
+    | undefined;
+  if (!row) return null;
+  return { oneLiner: row.one_liner, whyItMatters: row.why_it_matters };
+}
+
+export function putCachedSummary(args: {
+  signature: string;
+  oneLiner: string;
+  whyItMatters: string;
+  model: string;
+}): void {
+  getDb()
+    .prepare(
+      `INSERT INTO cluster_summaries (signature, one_liner, why_it_matters, model)
+       VALUES (@signature, @oneLiner, @whyItMatters, @model)
+       ON CONFLICT(signature) DO UPDATE SET
+         one_liner = excluded.one_liner,
+         why_it_matters = excluded.why_it_matters,
+         model = excluded.model`,
+    )
+    .run(args);
+}
