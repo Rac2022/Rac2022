@@ -2,55 +2,108 @@ import {
   ALL_SECTIONS,
   type EditionKind,
   type Section,
-  type StoredArticle,
+  type StoryCluster,
 } from "@/types/ledger";
-import {
-  getRecentArticles,
-  getRecentArticlesBySection,
-} from "./queries";
+import { getEditionClusters, getLatestEdition } from "./queries";
 
-export interface EditionView {
+export interface EditionLayout {
+  hero: StoryCluster | null;
+  topStories: StoryCluster[];
+  sections: { name: Section; clusters: StoryCluster[] }[];
+  briefs: StoryCluster[];
+  totalClusters: number;
+}
+
+export interface EditionSnapshot {
+  id: number;
   kind: EditionKind;
   date: Date;
-  hero: StoredArticle | null;
-  topStories: StoredArticle[];
-  sections: { name: Section; articles: StoredArticle[] }[];
-  totalArticles: number;
+  windowStart: string;
+  windowEnd: string;
+  generatedAt: string;
+  clusters: StoryCluster[];
+  layout: EditionLayout;
 }
 
 /**
- * Decide whether to render the morning or evening edition based on local time.
- * Before 15:00 local = morning, afterward = evening. Callers may override.
+ * Decide whether "now" is morning or evening.
+ * Before 15:00 local time counts as morning, otherwise evening.
  */
 export function currentEditionKind(now = new Date()): EditionKind {
   return now.getHours() < 15 ? "morning" : "evening";
 }
 
 /**
- * Build the edition view from whatever is currently in the DB.
- * This is Phase 1 behavior: no clustering yet, just "recent articles per section."
+ * Load the most recently generated edition from the DB.
+ * Returns null if none has ever been generated.
  */
-export function buildEditionView(kind: EditionKind = currentEditionKind()): EditionView {
-  const recent = getRecentArticles(80);
-  const hero = recent[0] ?? null;
-  const topStories = recent.slice(1, 6);
+export function loadLatestEdition(): EditionSnapshot | null {
+  const head = getLatestEdition();
+  if (!head) return null;
+  const clusters = getEditionClusters(head.id);
+  return {
+    id: head.id,
+    kind: head.kind,
+    date: new Date(head.generatedAt),
+    windowStart: head.windowStart,
+    windowEnd: head.windowEnd,
+    generatedAt: head.generatedAt,
+    clusters,
+    layout: assembleLayout(clusters),
+  };
+}
 
-  const sections: { name: Section; articles: StoredArticle[] }[] = ALL_SECTIONS
-    .filter((s) => s !== "Briefs")
-    .map((name) => ({
-      name,
-      articles: getRecentArticlesBySection(name, 5),
-    }));
+/**
+ * Slice a ranked cluster list into the named front-page slots.
+ *
+ *   hero        : rank 1
+ *   topStories  : ranks 2..5 (4 items)
+ *   sections    : per-section next best clusters, up to 5 per section
+ *   briefs      : everything else, shortest form
+ *
+ * A cluster never appears in more than one slot.
+ */
+export function assembleLayout(clusters: StoryCluster[]): EditionLayout {
+  const ordered = [...clusters].sort((a, b) => a.rank - b.rank);
+  const used = new Set<number>();
 
-  // Briefs = everything left over, shortest form.
-  sections.push({ name: "Briefs", articles: recent.slice(6, 18) });
+  const hero = ordered[0] ?? null;
+  if (hero) used.add(hero.id);
+
+  const topStories = ordered.slice(1, 5);
+  for (const c of topStories) used.add(c.id);
+
+  const SECTIONS_ON_FRONT: Section[] = ALL_SECTIONS.filter(
+    (s) => s !== "Briefs",
+  );
+
+  const PER_SECTION = 5;
+  const sections = SECTIONS_ON_FRONT.map((name) => {
+    const bucket: StoryCluster[] = [];
+    for (const c of ordered) {
+      if (used.has(c.id)) continue;
+      if (c.section !== name) continue;
+      bucket.push(c);
+      used.add(c.id);
+      if (bucket.length >= PER_SECTION) break;
+    }
+    return { name, clusters: bucket };
+  }).filter((s) => s.clusters.length > 0);
+
+  const BRIEFS_CAP = 12;
+  const briefs: StoryCluster[] = [];
+  for (const c of ordered) {
+    if (used.has(c.id)) continue;
+    briefs.push(c);
+    used.add(c.id);
+    if (briefs.length >= BRIEFS_CAP) break;
+  }
 
   return {
-    kind,
-    date: new Date(),
     hero,
     topStories,
     sections,
-    totalArticles: recent.length,
+    briefs,
+    totalClusters: ordered.length,
   };
 }

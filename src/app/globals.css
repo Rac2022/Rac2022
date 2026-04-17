@@ -37,7 +37,7 @@ body {
 .font-meta {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: 0.72rem;
   color: var(--ink-muted);
@@ -52,6 +52,11 @@ body {
 .rule-double {
   border-top: 3px double var(--rule);
   border-bottom: 3px double var(--rule);
+}
+
+/* Default readable measure for article body text. */
+.measure {
+  max-width: 62ch;
 }
 
 a {

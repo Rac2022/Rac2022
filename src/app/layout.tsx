@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Morning Ledger",
   description:
-    "A calm, newspaper-style daily briefing. No feed, no notifications — just today's edition.",
+    "A calm, newspaper-style daily briefing. No feed, no notifications, just today's edition.",
 };
 
 export default function RootLayout({

@@ -52,6 +52,7 @@ export interface StoryCluster {
   whyItMatters: string | null;
   section: Section;
   importance: number;
+  rank: number;
   primaryArticle: StoredArticle;
   relatedArticles: StoredArticle[];
 }

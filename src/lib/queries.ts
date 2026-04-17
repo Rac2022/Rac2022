@@ -1,9 +1,11 @@
 import { getDb } from "./db";
 import type {
+  EditionKind,
   FeedConfig,
   NormalizedArticle,
   Section,
   StoredArticle,
+  StoryCluster,
 } from "@/types/ledger";
 
 interface FeedRow {
@@ -137,4 +139,183 @@ export function countArticles(): number {
     .prepare(`SELECT COUNT(*) AS n FROM articles`)
     .get() as { n: number };
   return row.n;
+}
+
+/** Articles whose published_at (or ingested_at if missing) falls in [startIso, endIso). */
+export function getArticlesInWindow(
+  startIso: string,
+  endIso: string,
+): StoredArticle[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT * FROM articles
+       WHERE COALESCE(published_at, ingested_at) >= ?
+         AND COALESCE(published_at, ingested_at) <  ?
+       ORDER BY COALESCE(published_at, ingested_at) DESC`,
+    )
+    .all(startIso, endIso) as ArticleRow[];
+  return rows.map(rowToArticle);
+}
+
+// ---------- clusters ----------
+
+export function insertCluster(args: {
+  primaryArticleId: number;
+  title: string;
+  section: Section;
+  importance: number;
+  oneLiner?: string | null;
+  whyItMatters?: string | null;
+}): number {
+  const row = getDb()
+    .prepare(
+      `INSERT INTO story_clusters
+        (primary_article_id, title, section, importance, one_liner, why_it_matters)
+       VALUES (@primaryArticleId, @title, @section, @importance, @oneLiner, @whyItMatters)
+       RETURNING id`,
+    )
+    .get({
+      primaryArticleId: args.primaryArticleId,
+      title: args.title,
+      section: args.section,
+      importance: args.importance,
+      oneLiner: args.oneLiner ?? null,
+      whyItMatters: args.whyItMatters ?? null,
+    }) as { id: number };
+  return row.id;
+}
+
+export function insertClusterItem(clusterId: number, articleId: number): void {
+  getDb()
+    .prepare(
+      `INSERT OR IGNORE INTO cluster_items (cluster_id, article_id) VALUES (?, ?)`,
+    )
+    .run(clusterId, articleId);
+}
+
+// ---------- editions ----------
+
+interface EditionRow {
+  id: number;
+  kind: EditionKind;
+  window_start: string;
+  window_end: string;
+  generated_at: string;
+}
+
+export function insertEdition(args: {
+  kind: EditionKind;
+  windowStart: string;
+  windowEnd: string;
+}): number {
+  const row = getDb()
+    .prepare(
+      `INSERT INTO editions (kind, window_start, window_end)
+       VALUES (@kind, @windowStart, @windowEnd)
+       RETURNING id`,
+    )
+    .get(args) as { id: number };
+  return row.id;
+}
+
+export function insertEditionItem(args: {
+  editionId: number;
+  clusterId: number;
+  rank: number;
+  section: Section;
+}): void {
+  getDb()
+    .prepare(
+      `INSERT INTO edition_items (edition_id, cluster_id, rank, section)
+       VALUES (@editionId, @clusterId, @rank, @section)`,
+    )
+    .run(args);
+}
+
+export function getLatestEdition(): {
+  id: number;
+  kind: EditionKind;
+  windowStart: string;
+  windowEnd: string;
+  generatedAt: string;
+} | null {
+  const row = getDb()
+    .prepare(`SELECT * FROM editions ORDER BY id DESC LIMIT 1`)
+    .get() as EditionRow | undefined;
+  if (!row) return null;
+  return {
+    id: row.id,
+    kind: row.kind,
+    windowStart: row.window_start,
+    windowEnd: row.window_end,
+    generatedAt: row.generated_at,
+  };
+}
+
+interface ClusterRow {
+  id: number;
+  primary_article_id: number;
+  title: string;
+  one_liner: string | null;
+  why_it_matters: string | null;
+  section: string;
+  importance: number;
+}
+
+/**
+ * Load the clusters for an edition, ordered by rank.
+ * Each returned cluster has its primary + related articles fully hydrated.
+ */
+export function getEditionClusters(editionId: number): StoryCluster[] {
+  const db = getDb();
+
+  const clusterRows = db
+    .prepare(
+      `SELECT c.id, c.primary_article_id, c.title, c.one_liner, c.why_it_matters,
+              ei.section AS section, c.importance, ei.rank AS rank
+         FROM edition_items ei
+         JOIN story_clusters c ON c.id = ei.cluster_id
+        WHERE ei.edition_id = ?
+        ORDER BY ei.rank ASC`,
+    )
+    .all(editionId) as (ClusterRow & { rank: number })[];
+
+  if (clusterRows.length === 0) return [];
+
+  const clusterIds = clusterRows.map((c) => c.id);
+  const placeholders = clusterIds.map(() => "?").join(",");
+  const itemRows = db
+    .prepare(
+      `SELECT ci.cluster_id, a.*
+         FROM cluster_items ci
+         JOIN articles a ON a.id = ci.article_id
+        WHERE ci.cluster_id IN (${placeholders})`,
+    )
+    .all(...clusterIds) as (ArticleRow & { cluster_id: number })[];
+
+  const byCluster = new Map<number, StoredArticle[]>();
+  for (const row of itemRows) {
+    const { cluster_id, ...rest } = row;
+    const list = byCluster.get(cluster_id) ?? [];
+    list.push(rowToArticle(rest as ArticleRow));
+    byCluster.set(cluster_id, list);
+  }
+
+  return clusterRows.map((c) => {
+    const articles = byCluster.get(c.id) ?? [];
+    const primary =
+      articles.find((a) => a.id === c.primary_article_id) ?? articles[0];
+    const related = articles.filter((a) => a.id !== primary?.id);
+    return {
+      id: c.id,
+      title: c.title,
+      oneLiner: c.one_liner,
+      whyItMatters: c.why_it_matters,
+      section: c.section as Section,
+      importance: c.importance,
+      rank: c.rank,
+      primaryArticle: primary,
+      relatedArticles: related,
+    };
+  });
 }
