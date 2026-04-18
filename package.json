@@ -9,6 +9,7 @@
     "lint": "next lint",
     "ingest": "tsx scripts/ingest.ts",
     "edition": "tsx scripts/generate-edition.ts",
+    "scheduled": "tsx scripts/run-scheduled.ts",
     "db:reset": "rm -f data/ledger.db"
   },
   "dependencies": {
