@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/*
+  Design tokens — see DESIGN.md.
+  Typefaces (Google Fonts via @fontsource):
+    - Oswald            display: headings, big numbers
+    - Source Sans 3     body: copy, entry text, controls
+    - IBM Plex Mono     mono: dates, counts, ledger columns
+*/
+@theme {
+  --color-paper: #f6f7f6;
+  --color-card: #fcfcfb;
+  --color-ink: #17191a;
+  --color-soft: #565b5c;
+  --color-red: #b3382c;
+  --color-press: #8f2c22;
+  --color-tint: #f2e5e2;
+  --color-zero: #5c6165;
+  --color-zerobg: #eeefef;
+  --color-rule: #d8dbda;
+
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-body: "Source Sans 3", "Helvetica Neue", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lede: 1.125rem;
+  --text-lede--line-height: 1.625rem;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.75rem;
+  --text-h2: 1.75rem;
+  --text-h2--line-height: 2rem;
+  --text-display: 2.5rem;
+  --text-display--line-height: 2.75rem;
+  --text-number: 4rem;
+  --text-number--line-height: 4rem;
+
+  --radius-ledger: 2px;
+}
+
+html {
+  background: var(--color-paper);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-red);
+  outline-offset: 2px;
+}
+
+/* The one motion moment: the entry stamps into the ledger */
+@keyframes stamp-in {
+  0% {
+    transform: scale(1.04);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(0.99);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.stamp-in {
+  animation: stamp-in 360ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-in {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
